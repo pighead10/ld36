@@ -39,7 +39,6 @@ public:
 	virtual void collided(Entity* other);
 	float getRadius() const;
 
-
 	virtual void damaged(int amount);
 
 	bool isDestroyed() const;
@@ -62,7 +61,6 @@ protected:
 	sf::Sprite sprite_;
 
 	void setWalkthrough(bool walkthrough);
-	void setSeethrough(bool seethough);
 private:
 	bool active_; //Active if visible and moving. Inactive means not visible and not moving (e.g. in unlit room).
 
@@ -73,7 +71,6 @@ private:
 	ENTITY_TYPE type_;
 
 	bool walkthrough_;
-	bool seethrough_;
 
 	sfld::Vector2f position_; //centre position
 	

@@ -6,6 +6,14 @@ Player::Player(ResourceManager<sf::Texture, std::string>* resource_manager, Enti
 	constructEntity(resource_manager, "player", entity_manager, position, false, Entity::SHAPE_CIRCLE, Entity::DYNAMIC_MOVING, Entity::TYPE_PLAYER);
 }
 
+void Player::setRoomNum(int num) {
+	room_num_ = num;
+}
+
+int Player::getRoomNum() const {
+	return room_num_;
+}
+
 void Player::update(int frame_time) {
 	using namespace sf;
 	sfld::Vector2f dir(0, 0);

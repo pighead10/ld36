@@ -28,10 +28,6 @@ void Entity::setWalkthrough(bool walkthrough){
 	walkthrough_ = walkthrough;
 }
 
-void Entity::setSeethrough(bool seethrough){
-	seethrough_ = seethrough;
-}
-
 bool Entity::isDestroyed() const{
 	return destroyed_;
 }

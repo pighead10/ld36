@@ -6,6 +6,7 @@
 
 #define PORT 5337 
 #define IP 82.23.253.24
+#define SEND_DELAY 100
 
 struct PlayerInfo {
 	int player_no;
@@ -56,26 +57,35 @@ int main() {
 	}
 
 	std::cout << "Game started. Sending start packets." << std::endl;
-	//Start game
-	sf::Packet sp;
-	sp << "start";
-	sendToClients(&clients, sp);
+	int total_players = clients.size();
+	for (int i = 0; i < clients.size(); i++) {
+		//Send player number of player to each client followed by number of total players;
+		sf::Packet s;
+		s << i << total_players;
+		clients[i]->send(s);
+	}
 
 	setClientBlocking(&clients, false);
 
 	bool running = true;
+	sf::Clock clock;
 	while (running) {
 		for (int i = 0; i < clients.size(); i++) {
 			sf::Packet rec;
-			clients[i]->receive(rec);
-			rec >> players[i];
-		}
-		for (auto& client : clients) {
-			for (int i = 0; i < clients.size(); i++) {
-				sf::Packet s;
-				s >> players[i];
-				client->send(s);
+			if (clients[i]->receive(rec) == sf::Socket::Done) {
+				rec >> players[i];
+				std::cout << "Received info: Player number: " << players[i].player_no << " Name: " << players[i].name << " Room: " << players[i].room_no << std::endl;
 			}
+		}
+		if (clock.getElapsedTime().asMilliseconds() > SEND_DELAY) {
+			for (auto& client : clients) {
+				for (int i = 0; i < clients.size(); i++) {
+					sf::Packet s;
+					s << players[i];
+					client->send(s);
+				}
+			}
+			clock.restart();
 		}
 	}
 	

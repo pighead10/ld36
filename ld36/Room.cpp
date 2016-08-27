@@ -5,8 +5,10 @@
 #include "Player.h"
 #include "StaticObj.h"
 
-Room::Room(sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager, Player* player, ResourceManager<sf::Texture, std::string>* resource_manager) :
-	world_coords_(world_coords), room_size_(room_size), entity_manager_(entity_manager), player_(player), resource_manager_(resource_manager){
+Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager,
+	Player* player, ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos) :
+	world_coords_(world_coords), room_size_(room_size), entity_manager_(entity_manager), player_(player),
+	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos){
 	room_area_ = sf::FloatRect(world_coords, sfld::Vector2f(room_size, room_size));
 	generateRoom();
 }
@@ -38,6 +40,7 @@ void Room::update(int frame_time) {
 	//Determine whether player is in this room
 	if (room_area_.contains(player_->getPosition())) {
 		setLit(true);
+		player_->setRoomNum(room_num_);
 	}
 	else {
 		setLit(false);
