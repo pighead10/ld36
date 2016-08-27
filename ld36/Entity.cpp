@@ -21,6 +21,7 @@ void Entity::constructEntity(
 	type_ = type;
 	destroyed_ = false;
 	rotating_ = false;
+	active_ = true;
 }
 
 void Entity::setWalkthrough(bool walkthrough){
@@ -105,7 +106,7 @@ void Entity::move(sfld::Vector2f direction, int frameTime, float magnitude){
 	for (auto& it : *list){
 		if (it.get() != this){
 			float dist = sfld::Vector2f(it->getPosition() - getPosition()).length();
-			if (!it->isWalkthrough()){
+			if (!it->isWalkthrough() && it->isActive()){
 				if (dist <= TILE_SIZE*1.5f){ //need accurate collisions here
 					MTV mtv(Collision::getCollision(getSprite(), getShape(), it->getSprite(), it->getShape()));
 					if (!(mtv.axis == MTV::NONE.axis && mtv.overlap == MTV::NONE.overlap)){;
@@ -134,4 +135,12 @@ void Entity::move(sfld::Vector2f direction, int frameTime, float magnitude){
 		sprite_.setRotation(maths::toDegrees(atan2(direction.y, direction.x)));
 	}
 	doOffset(direction*(float)frameTime*magnitude);
+}
+
+bool Entity::isActive() const {
+	return active_;
+}
+
+void Entity::setActive(bool active) {
+	active_ = active;
 }

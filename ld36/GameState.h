@@ -4,6 +4,8 @@
 #include "ResourceManager.h"
 
 class EntityManager;
+class Room;
+class Player;
 
 class GameState : public BaseState{
 public:
@@ -18,7 +20,11 @@ public:
 	void update(int frameTime);
 	void render(sf::RenderTarget* target);
 private:
-	std::unique_ptr<EntityManager> entity_manager_;
+	void generateRooms();
 
+	Player* player_;
+
+	std::unique_ptr<EntityManager> entity_manager_;
+	std::vector<std::unique_ptr<Room>> rooms_;
 	ResourceManager<sf::Texture, std::string> resourceManager_;
 };

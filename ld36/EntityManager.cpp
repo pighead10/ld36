@@ -25,7 +25,9 @@ void EntityManager::clear(){
 
 void EntityManager::update(int frameTime){
 	for (auto& it : entities_){
-		it->update(frameTime);
+		if (it->isActive()) {
+			it->update(frameTime);
+		}
 	}
 	for (auto& it = entities_.begin(); it != entities_.end();){
 		if ((*it)->isDestroyed()){
@@ -44,6 +46,8 @@ void EntityManager::update(int frameTime){
 
 void EntityManager::render(sf::RenderTarget* target){
 	for (auto& it : entities_){
-		it->render(target);
+		if (it->isActive()) {
+			it->render(target);
+		}
 	}
 }

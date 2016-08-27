@@ -44,6 +44,9 @@ public:
 
 	bool isDestroyed() const;
 	void setPosition(sfld::Vector2f position);
+
+	bool isActive() const;
+	void setActive(bool active);
 protected:
 	bool rotating_;
 	void destroy();
@@ -61,6 +64,8 @@ protected:
 	void setWalkthrough(bool walkthrough);
 	void setSeethrough(bool seethough);
 private:
+	bool active_; //Active if visible and moving. Inactive means not visible and not moving (e.g. in unlit room).
+
 	bool destroyed_;
 
 	ENTITY_SHAPE shape_;
