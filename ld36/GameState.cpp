@@ -16,6 +16,17 @@ void GameState::sfmlEvent(sf::Event evt){
 	}
 }
 
+void GameState::connectAndWait() {
+	//Connect to server and wait for start signal.
+	socket_.connect("localhost", 5337);
+	std::cout << "Connected to server." << std::endl;
+	sf::Packet rec;
+	socket_.receive(rec);
+	std::string response;
+	rec >> response;
+	std::cout << "Server said: " << response << std::endl;
+}
+
 void GameState::start(){
 	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_));
 
@@ -29,6 +40,8 @@ void GameState::start(){
 	generateRooms();
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0,0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50,50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
+
+	connectAndWait();
 }
 
 void GameState::pause(){	

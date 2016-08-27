@@ -9,7 +9,8 @@
 #include <tchar.h>
 
 // TODO: reference additional headers your program requires here
-#include "SFML/Graphics.hpp"
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 #include "Vector.h"
 #include <iostream>
 #include <cassert>

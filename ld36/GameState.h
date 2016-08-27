@@ -20,9 +20,13 @@ public:
 	void update(int frameTime);
 	void render(sf::RenderTarget* target);
 private:
+	void connectAndWait();
+
 	void generateRooms();
 
 	Player* player_;
+
+	sf::TcpSocket socket_;
 
 	std::unique_ptr<EntityManager> entity_manager_;
 	std::vector<std::unique_ptr<Room>> rooms_;
