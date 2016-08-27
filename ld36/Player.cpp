@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Player.h"
+#include "EntityManager.h"
 
 Player::Player(ResourceManager<sf::Texture, std::string>* resource_manager, EntityManager* entity_manager, sfld::Vector2f position) : speed_(0.1f){
 	constructEntity(resource_manager, "player", entity_manager, position, false, Entity::SHAPE_CIRCLE, Entity::DYNAMIC_MOVING, Entity::TYPE_PLAYER);
@@ -24,4 +25,5 @@ void Player::update(int frame_time) {
 
 	dir = dir.normalise();
 	move(dir, frame_time, speed_);
+	entityManager_->setViewFocus(this);
 }

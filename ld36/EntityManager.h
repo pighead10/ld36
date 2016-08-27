@@ -21,9 +21,11 @@ public:
 	void update(int frametime);
 	void render(sf::RenderTarget* target);
 
+	void setViewFocus(Entity* entity);
+
 	void clear();
 private:
-	sf::View view;
+	sf::View view_;
 	ResourceManager<sf::Texture, std::string>* resourceManager_;
 
 	EntityList push_queue_;

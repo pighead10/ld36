@@ -5,10 +5,14 @@
 #include "ResourceManager.h"
 
 EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager):resourceManager_(resourceManager){
-	view = SFLD::window_->getDefaultView();
+	view_ = SFLD::window_->getDefaultView();
 }
 
 EntityManager::~EntityManager() = default;
+
+void EntityManager::setViewFocus(Entity* entity) {
+	view_.setCenter(entity->getPosition());
+}
 
 void EntityManager::addEntity(Entity* entity){
 	push_queue_.push_back(std::unique_ptr<Entity>(entity));
@@ -45,6 +49,7 @@ void EntityManager::update(int frameTime){
 }
 
 void EntityManager::render(sf::RenderTarget* target){
+	SFLD::window_->setView(view_);
 	for (auto& it : entities_){
 		if (it->isActive()) {
 			it->render(target);

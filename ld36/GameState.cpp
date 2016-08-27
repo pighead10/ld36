@@ -48,6 +48,7 @@ void GameState::update(int frameTime){
 }
 
 void GameState::render(sf::RenderTarget* target){
+	//TODO: only render things on the player's screen so it won't lag to shit
 	entity_manager_->render(target);
 }
 
