@@ -1,8 +1,9 @@
 #pragma once
 
 #include "BaseState.h"
-
 #include "ResourceManager.h"
+
+class EntityManager;
 
 class GameState : public BaseState{
 public:
@@ -17,7 +18,7 @@ public:
 	void update(int frameTime);
 	void render(sf::RenderTarget* target);
 private:
-	sf::Sprite pig;
+	std::unique_ptr<EntityManager> entity_manager_;
 
 	ResourceManager<sf::Texture, std::string> resourceManager_;
 };
