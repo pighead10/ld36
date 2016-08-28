@@ -8,6 +8,7 @@
 #include "Room.h"
 #include "Trap.h"
 #include "TrapChest.h"
+#include "Mummy.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -21,6 +22,10 @@ sf::Packet& operator >> (sf::Packet& packet, PlayerInfo& m)
 
 GameState::GameState() = default;
 GameState::~GameState() = default;
+
+Room* GameState::getRoom(int n) {
+	return rooms_[n].get();
+}
 
 void GameState::sfmlEvent(sf::Event evt){
 	if (evt.type == sf::Event::Closed) {
@@ -84,11 +89,14 @@ void GameState::start(){
 	resourceManager_.load("door_closed", "door_closed.png");
 	resourceManager_.load("door_open", "door_open.png");
 	resourceManager_.load("trapchest", "trapchest.png");
+	resourceManager_.load("mummy", "mummy.png");
 
 	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(50, 50));
 	entity_manager_->addEntity(player_);
 
-	
+	//Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "mummy", 0.1f, player_, 50);
+	//entity_manager_->addEntity(mummy);
+
 	generateRooms(room_root);
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
@@ -98,7 +106,9 @@ void GameState::start(){
 	generateMap(max_rooms);
 
 	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
+	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
 	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
+	rooms_[0]->add(chest2, sfld::Vector2f(400, 400));
 }
 
 void GameState::pause(){	
@@ -231,7 +241,7 @@ Feature list to create next:
 -Display room numbers X
 -Display conditions for doors opening X
 -Add chests which give you the ability to place traps or gain weapons X
--First trap to add: Curse trap, zombies spawn in rooms you are in but don't follow you to other rooms.
+-First trap to add: Curse trap, Mummys spawn in rooms you are in but don't follow you to other rooms.
 -Add weapon
 -Then add randomly spawning enemies in rooms sometimes
 -At the end of the day, make the random generation thing, with a ending. Ends after last step in certain room.

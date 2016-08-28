@@ -11,6 +11,7 @@ class ParticleEngine;
 class TrapInterface;
 class GameState;
 class Trap;
+class Room;
 
 typedef std::vector<std::unique_ptr<Entity>> EntityList;
 
@@ -39,6 +40,8 @@ public:
 	void sendTrap(MessageType type, int room_no);
 	sf::RenderTexture* getLitTexture();
 	sf::RenderTexture* getUnlitTexture();
+
+	Room* getRoom(int n);
 private:
 	TrapInterface* trap_interface_;
 	GameState* game_state_;

@@ -43,7 +43,14 @@ public:
 	void update(int frame_time);
 	void playerTouchedWall(Entity* door);
 	void renderBackground(sf::RenderTarget* target);
+
+	void doCotm(int frame_time);
+	void setCotmReady();
 private:
+	int cotm_it;
+	int cotm_timer;
+	bool cotm_ready;
+
 	DoorConditionsList getConditionsFromDoor(Entity* door);
 
 	sf::Text room_text_;

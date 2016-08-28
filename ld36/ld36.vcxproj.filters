@@ -72,6 +72,9 @@
     <ClCompile Include="TrapChest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Mummy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResourceManager.h">
@@ -140,7 +143,7 @@
     <ClInclude Include="Trap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Zombie.h">
+    <ClInclude Include="Mummy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

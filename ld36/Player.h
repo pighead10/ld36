@@ -8,7 +8,10 @@ public:
 	void update(int frame_time);
 	void setRoomNum(int num);
 	int getRoomNum() const;
+	void doCotm();
+	bool getCotm() const;
 private:
+	bool cotm_;
 	int room_num_;
 	float speed_;
 };

@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "EntityManager.h"
 
-Player::Player(ResourceManager<sf::Texture, std::string>* resource_manager, EntityManager* entity_manager, sfld::Vector2f position) : speed_(0.5f){
+Player::Player(ResourceManager<sf::Texture, std::string>* resource_manager, EntityManager* entity_manager, sfld::Vector2f position) : speed_(0.5f),cotm_(false){
 	constructEntity(resource_manager, "player", entity_manager, position, false, Entity::SHAPE_CIRCLE, Entity::DYNAMIC_MOVING, Entity::TYPE_PLAYER);
 }
 
@@ -12,6 +12,15 @@ void Player::setRoomNum(int num) {
 
 int Player::getRoomNum() const {
 	return room_num_;
+}
+
+void Player::doCotm() {
+	//TODO display cursed indicator. Change sprite?
+	cotm_ = true;
+}
+
+bool Player::getCotm() const {
+	return cotm_;
 }
 
 void Player::update(int frame_time) {

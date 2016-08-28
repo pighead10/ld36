@@ -17,7 +17,7 @@ void ResourceManager<Resource,Identifier>::load(const Identifier& identifier,con
 		if (!resource->loadFromFile(directory + filename)){
 			throw std::runtime_error("Error: " + directory + filename + " cannot be loaded.");
 		}
-
+		 
 		resources_.insert(std::make_pair(identifier, std::move(resource)));
 	}
 }

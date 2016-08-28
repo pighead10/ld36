@@ -165,6 +165,7 @@
     <ClCompile Include="Trap.cpp" />
     <ClCompile Include="TrapChest.cpp" />
     <ClCompile Include="TrapInterface.cpp" />
+    <ClCompile Include="Mummy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseState.h" />
@@ -189,7 +190,7 @@
     <ClInclude Include="TrapChest.h" />
     <ClInclude Include="TrapInferface.h" />
     <ClInclude Include="Vector.h" />
-    <ClInclude Include="Zombie.h" />
+    <ClInclude Include="Mummy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ResourceManager.inl" />

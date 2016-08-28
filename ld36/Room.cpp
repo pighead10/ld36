@@ -5,11 +5,12 @@
 #include "Player.h"
 #include "StaticObj.h"
 #include "Door.h"
+#include "Mummy.h"
 
 Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager,
 	Player* player, ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos) :
 	world_coords_(world_coords), room_size_(room_size), entity_manager_(entity_manager), player_(player),
-	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos){
+	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos),cotm_it(0),cotm_timer(0),cotm_ready(false){
 	room_area_ = sf::FloatRect(world_coords, sfld::Vector2f(room_size, room_size));
 	room_text_.setFont(*entity_manager->getFont());
 	room_text_.setCharacterSize(room_size - 5*TILE_SIZE);
@@ -67,7 +68,20 @@ sf::Text Room::getRoomText() const {
 	return room_text_;
 }
 
+void Room::setCotmReady() {
+	cotm_ready = true;
+}
+
 void Room::update(int frame_time) {
+	if (player_->getRoomNum() == room_num_) {
+		if (player_->getCotm()) {
+			doCotm(frame_time);
+		}
+		else if (cotm_ready) {
+			player_->doCotm();
+		}
+	}
+
 	//Remove all entities that have been destroyed by EntityManager, which will be null pointers
 	for (auto& it = entities_.begin(); it != entities_.end();) {
 		if (*it == NULL) {
@@ -108,9 +122,16 @@ void Room::update(int frame_time) {
 	//Scan player infos for traps etc.
 	for (auto& it = player_infos_->begin(); it != player_infos_->end();) {
 		if (it->msg_type != MESSAGE_INFO && it->room_no == room_num_) {
-			if (it->msg_type == MESSAGE_TRAP_RED && it->room_no == room_num_ && player_->getRoomNum() == room_num_) {
-				//Pop traps once read
-				entity_manager_->doRedTrap();
+			//Pop traps once read
+			if (it->room_no == room_num_) {
+				if (it->msg_type == MESSAGE_TRAP_RED && player_->getRoomNum() == room_num_) {	
+					std::cout << "Blinding light activated" << std::endl;
+					entity_manager_->doRedTrap();
+				}
+				else if (it->msg_type == MESSAGE_TRAP_COTM) {
+					std::cout << "Curse of the mummy activated" << std::endl;
+					setCotmReady();
+				}
 			}
 			it = player_infos_->erase(it);
 		}
@@ -118,7 +139,17 @@ void Room::update(int frame_time) {
 			it++;
 		}
 	}
+}
 
+void Room::doCotm(int frame_time) {
+	cotm_timer += frame_time;
+	int threshold = std::max(3000 - (333 * cotm_it), 500);
+	if (cotm_timer > threshold) {
+		cotm_it++;
+		cotm_timer = 0;
+		Entity* mummy = new Mummy(resource_manager_, entity_manager_, sfld::Vector2f(0,0), "mummy", 0.1f, player_, 50);
+		add(mummy, sfld::Vector2f(room_size_ / 2, room_size_ / 2));
+	}
 }
 
 void Room::add(Entity* entity, sfld::Vector2f local_position) {

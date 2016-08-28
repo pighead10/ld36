@@ -33,6 +33,7 @@ public:
 	void render(sf::RenderTarget* target);
 
 	void sendTrap(MessageType type, int room_no);
+	Room* getRoom(int n);
 private:
 	void sendData();
 	void receiveData();

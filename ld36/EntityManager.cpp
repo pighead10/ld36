@@ -37,6 +37,10 @@ sf::Font* EntityManager::getFont() {
 	return &font_;
 }
 
+Room* EntityManager::getRoom(int n) {
+	return game_state_->getRoom(n);
+}
+
 void EntityManager::addTrap(Trap* trap) {
 	trap_interface_->addTrap(trap);
 }
