@@ -18,16 +18,16 @@ void Player::update(int frame_time) {
 	using namespace sf;
 	sfld::Vector2f dir(0, 0);
 
-	if (Keyboard::isKeyPressed(Keyboard::W) || Keyboard::isKeyPressed(Keyboard::Up)) {
+	if (Keyboard::isKeyPressed(Keyboard::W)) {
 		dir.y -= 1;
 	}
-	if (Keyboard::isKeyPressed(Keyboard::S) || Keyboard::isKeyPressed(Keyboard::Down)) {
+	if (Keyboard::isKeyPressed(Keyboard::S)) {
 		dir.y += 1;
 	}
-	if (Keyboard::isKeyPressed(Keyboard::A) || Keyboard::isKeyPressed(Keyboard::Left)) {
+	if (Keyboard::isKeyPressed(Keyboard::A)) {
 		dir.x -= 1;
 	}
-	if (Keyboard::isKeyPressed(Keyboard::D) || Keyboard::isKeyPressed(Keyboard::Right)) {
+	if (Keyboard::isKeyPressed(Keyboard::D)) {
 		dir.x += 1;
 	}
 

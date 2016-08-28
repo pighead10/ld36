@@ -13,7 +13,7 @@ public:
 		TRAP_INTERFACE_PLACING
 	};
 	TrapInterface();
-	explicit TrapInterface(EntityManager* entity_manager);
+	TrapInterface(EntityManager* entity_manager, int max_rooms);
 	~TrapInterface();
 
 	void addTrap(Trap* trap);
@@ -46,4 +46,6 @@ private:
 	std::string typed_num_;
 	sf::Text selection_text_;
 	std::vector<sf::Text> texts_;
+
+	int max_rooms_;
 };

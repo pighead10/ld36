@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "Trap.h"
+#include "EntityManager.h"
 
-Trap::Trap(std::string name) : name_(name) {}
+Trap::Trap(std::string name, MessageType message_type, EntityManager* entity_manager) : name_(name), entity_manager_(entity_manager), message_type_(message_type) {}
 
 Trap::~Trap() = default;
 
@@ -10,6 +11,5 @@ std::string Trap::getName() const{
 }
 
 void Trap::doTrap(int room_no) {
-	//TODO do trap
-	std::cout << "doing trap " << getName() << " in room " << room_no << std::endl;
+	entity_manager_->sendTrap(message_type_, room_no);
 }

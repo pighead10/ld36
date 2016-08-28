@@ -18,7 +18,8 @@ public:
 	enum ENTITY_TYPE{
 		TYPE_WALL,
 		TYPE_PLAYER,
-		TYPE_DOOR
+		TYPE_DOOR,
+		TYPE_CHEST
 	};
 	Entity();
 	~Entity();

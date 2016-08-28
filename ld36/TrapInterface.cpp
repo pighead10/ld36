@@ -5,7 +5,7 @@
 
 TrapInterface::TrapInterface() = default;
 
-TrapInterface::TrapInterface(EntityManager* entity_manager) : entity_manager_(entity_manager), state_(TRAP_INTERFACE_NONE),selected_(0){
+TrapInterface::TrapInterface(EntityManager* entity_manager, int max_rooms) : entity_manager_(entity_manager), state_(TRAP_INTERFACE_NONE),selected_(0), max_rooms_(max_rooms){
 	font_ = entity_manager->getFont();
 	createGui();
 }
@@ -115,7 +115,10 @@ void TrapInterface::keyPressed(sf::Keyboard::Key key) {
 			}
 		}
 		else if (key == sf::Keyboard::Return) {
-			placeTrap(stoi(typed_num_));
+			int room_no = stoi(typed_num_);
+			if (room_no >= 0 && room_no <= max_rooms_) {
+				placeTrap(stoi(typed_num_));
+			}
 		}
 	}
 }

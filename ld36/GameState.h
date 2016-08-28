@@ -31,9 +31,9 @@ public:
 
 	void update(int frameTime);
 	void render(sf::RenderTarget* target);
-private:
-	void sendTrap(MessageType type, int room_no);
 
+	void sendTrap(MessageType type, int room_no);
+private:
 	void sendData();
 	void receiveData();
 	void connectAndWait();
@@ -44,6 +44,8 @@ private:
 
 	int player_no_;
 	Player* player_;
+
+	int room_size_;
 
 	PlayerInfo old_data_;
 	std::vector<PlayerInfo> player_infos_;

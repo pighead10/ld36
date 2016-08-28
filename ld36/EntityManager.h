@@ -9,12 +9,14 @@
 class Entity;
 class ParticleEngine;
 class TrapInterface;
+class GameState;
+class Trap;
 
 typedef std::vector<std::unique_ptr<Entity>> EntityList;
 
 class EntityManager{
 public:
-	EntityManager(ResourceManager<sf::Texture,std::string>* resourceManager, std::vector<PlayerInfo>* player_infos);
+	EntityManager(ResourceManager<sf::Texture,std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state,int room_size);
 	~EntityManager();
 
 	void addEntity(Entity* entity);
@@ -28,15 +30,23 @@ public:
 	sf::Font* getFont();
 
 	void clear();
-
+	void addTrap(Trap* trap);
+	void setTrapInterface(TrapInterface* trap_interface);
 	void doRedTrap();
 	void renderText(sf::Text text);
 	void renderTrapInterface(TrapInterface* trap_interface, sf::RenderTarget* target);
+
+	void sendTrap(MessageType type, int room_no);
+	sf::RenderTexture* getLitTexture();
+	sf::RenderTexture* getUnlitTexture();
 private:
+	TrapInterface* trap_interface_;
+	GameState* game_state_;
 	sf::Font font_;
 
 	bool red_trap_;
 	int red_timer_;
+	int room_size_;
 
 	sf::RenderTexture red_tex;
 	sf::View view_;
@@ -47,4 +57,6 @@ private:
 	std::vector<PlayerInfo>* player_infos_;
 
 	std::vector<sf::Text> texts_;
+	sf::RenderTexture lit_tex_;
+	sf::RenderTexture unlit_tex_;
 };

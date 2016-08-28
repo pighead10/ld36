@@ -16,8 +16,9 @@ Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManag
 	room_text_.setString(std::to_string(room_num));
 	room_text_.setOrigin(room_text_.getGlobalBounds().left + room_text_.getGlobalBounds().width / 2, room_text_.getGlobalBounds().top + room_text_.getGlobalBounds().height / 2);
 	room_text_.setPosition(room_area_.left + room_area_.width / 2, room_area_.top + room_area_.height / 2);
-	room_text_.setColor(sf::Color(255,255,255,100));
+	room_text_.setFillColor(sf::Color(255,255,255,100));
 	generateRoom();
+	background_.create(100, 100);
 }
 
 Room::~Room() = default;
@@ -142,6 +143,18 @@ void Room::generateRoom() {
 			entity_manager_->addEntity(new StaticObj(resource_manager_, "wall", entity_manager_, sfld::Vector2f(room_area_.left + room_area_.width, y), Entity::SHAPE_SQUARE, Entity::TYPE_WALL));
 		}
 	}
+}
+
+void Room::renderBackground(sf::RenderTarget* target) {
+	sf::Sprite s;
+	if (lit_) {
+		s.setTexture(entity_manager_->getLitTexture()->getTexture());
+	}
+	else {
+		s.setTexture(entity_manager_->getUnlitTexture()->getTexture());
+	}
+	s.setPosition(world_coords_);
+	target->draw(s);
 }
 
 void Room::addDoor(DoorPosition position, DoorConditionsList conditions) {

@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "Room.h"
 #include "Trap.h"
+#include "TrapChest.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -69,32 +70,35 @@ void GameState::connectAndWait() {
 }
 
 void GameState::start(){
-	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_));
+	room_size_ = 16 * TILE_SIZE;
+	int room_root = 10;
+	int max_rooms = room_root*room_root;
+	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_,this,room_size_));
 
-	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get()));
-	Trap* trap1 = new Trap("trap 1");
-	Trap* trap2 = new Trap("trap 2");
-	trap_interface_->addTrap(trap1);
-	trap_interface_->addTrap(trap2);
-
+	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get(),max_rooms));
+	entity_manager_->setTrapInterface(trap_interface_.get());
 
 	resourceManager_.setDirectory("media/images/");
 	resourceManager_.load("player", "pig.png");
 	resourceManager_.load("wall", "wall.png");
 	resourceManager_.load("door_closed", "door_closed.png");
 	resourceManager_.load("door_open", "door_open.png");
+	resourceManager_.load("trapchest", "trapchest.png");
 
 	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(50, 50));
 	entity_manager_->addEntity(player_);
 
-	int room_root = 10;
+	
 	generateRooms(room_root);
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 
 	connectAndWait();
 	//player_no_ = 3;
-	generateMap(room_root*room_root);
+	generateMap(max_rooms);
+
+	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
+	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
 }
 
 void GameState::pause(){	
@@ -166,6 +170,9 @@ void GameState::update(int frameTime){
 void GameState::render(sf::RenderTarget* target){
 	//TODO: only render things on the player's screen so it won't lag to shit
 	for (auto& it : rooms_) {
+		it->renderBackground(target);
+	}
+	for (auto& it : rooms_) {
 		target->draw(it->getRoomText());
 	}
 	entity_manager_->render(target);
@@ -173,12 +180,11 @@ void GameState::render(sf::RenderTarget* target){
 }
 
 void GameState::generateRooms(int room_root) {
-	int room_size = 16*TILE_SIZE;
 	int room_num = 0;
 	for (int x = 0; x < room_root; x++) {
 		for (int y = 0; y < room_root; y++) {
-			rooms_.push_back(std::unique_ptr<Room>(new Room(room_num, sfld::Vector2f(x*room_size, y*room_size),
-				room_size, entity_manager_.get(), player_, &resourceManager_,&player_infos_)));
+			rooms_.push_back(std::unique_ptr<Room>(new Room(room_num, sfld::Vector2f(x*room_size_, y*room_size_),
+				room_size_, entity_manager_.get(), player_, &resourceManager_,&player_infos_)));
 			room_num++;
 		}
 	}
@@ -224,7 +230,7 @@ void GameState::receiveData() {
 Feature list to create next:
 -Display room numbers X
 -Display conditions for doors opening X
--Add chests which give you the ability to place traps or gain weapons
+-Add chests which give you the ability to place traps or gain weapons X
 -First trap to add: Curse trap, zombies spawn in rooms you are in but don't follow you to other rooms.
 -Add weapon
 -Then add randomly spawning enemies in rooms sometimes

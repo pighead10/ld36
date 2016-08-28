@@ -163,6 +163,7 @@
     <ClCompile Include="StaticObj.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Trap.cpp" />
+    <ClCompile Include="TrapChest.cpp" />
     <ClCompile Include="TrapInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -188,6 +189,7 @@
     <ClInclude Include="TrapChest.h" />
     <ClInclude Include="TrapInferface.h" />
     <ClInclude Include="Vector.h" />
+    <ClInclude Include="Zombie.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ResourceManager.inl" />

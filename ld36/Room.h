@@ -42,6 +42,7 @@ public:
 
 	void update(int frame_time);
 	void playerTouchedWall(Entity* door);
+	void renderBackground(sf::RenderTarget* target);
 private:
 	DoorConditionsList getConditionsFromDoor(Entity* door);
 
@@ -65,4 +66,5 @@ private:
 
 	int midx_;
 	int midy_;
+	sf::Texture background_;
 };
