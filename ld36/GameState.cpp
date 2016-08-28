@@ -9,11 +9,12 @@
 #include "Trap.h"
 #include "TrapChest.h"
 #include "Mummy.h"
+#include "SwordChest.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
 {
-	return packet << m.msg_type <<m.player_no << m.room_no << m.name;
+	return packet << m.msg_type << m.player_no << m.room_no << m.name;
 }
 sf::Packet& operator >> (sf::Packet& packet, PlayerInfo& m)
 {
@@ -90,6 +91,7 @@ void GameState::start(){
 	resourceManager_.load("door_open", "door_open.png");
 	resourceManager_.load("trapchest", "trapchest.png");
 	resourceManager_.load("mummy", "mummy.png");
+	resourceManager_.load("wepchest", "wepchest.png");
 
 	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(50, 50));
 	entity_manager_->addEntity(player_);
@@ -107,8 +109,11 @@ void GameState::start(){
 
 	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
 	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
+
+	SwordChest* schest = new SwordChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
 	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
 	rooms_[0]->add(chest2, sfld::Vector2f(400, 400));
+	rooms_[0]->add(schest, sfld::Vector2f(200, 400));
 }
 
 void GameState::pause(){	

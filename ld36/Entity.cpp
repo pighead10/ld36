@@ -10,6 +10,7 @@ void Entity::constructEntity(
 	ResourceManager<sf::Texture, std::string>* resourceManager, std::string spriteName,
 	EntityManager* entityManager, sfld::Vector2f position, bool walkthrough,
 	ENTITY_SHAPE shape, ENTITY_DYNAMIC dynamic,ENTITY_TYPE type){
+	health_ = 10000000;
 	resourceManager_ = resourceManager;
 	entityManager_ = entityManager;
 	sprite_ = sf::Sprite(resourceManager_->get(spriteName));
@@ -22,6 +23,7 @@ void Entity::constructEntity(
 	destroyed_ = false;
 	rotating_ = false;
 	active_ = true;
+	weapon_ = NULL;
 }
 
 void Entity::setWalkthrough(bool walkthrough){
@@ -34,6 +36,10 @@ bool Entity::isDestroyed() const{
 
 void Entity::destroy(){
 	destroyed_ = true;
+}
+
+void Entity::setWeapon(Weapon* weapon) {
+	weapon_ = weapon;
 }
 
 void Entity::update(int frameTime){
@@ -52,6 +58,10 @@ Entity::ENTITY_DYNAMIC Entity::getDynamic() const{
 }
 
 void Entity::damaged(int amount){
+	health_ -= amount;
+	if (health_ <= 0) {
+		destroy();
+	}
 }
 
 Entity::ENTITY_TYPE Entity::getType() const{

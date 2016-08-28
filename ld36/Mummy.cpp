@@ -5,6 +5,7 @@ Mummy::Mummy(ResourceManager<sf::Texture, std::string>* resource_manager,
 	EntityManager* entity_manager, sfld::Vector2f position,std::string sprite_name,float speed,Entity* player, int damage)
 	:speed_(speed),player_(player),damage_(damage){
 	constructEntity(resource_manager, "mummy", entity_manager, position, false, SHAPE_CIRCLE, DYNAMIC_MOVING, TYPE_MUMMY);
+	health_ = 100;
 }
 
 void Mummy::update(int frameTime) {

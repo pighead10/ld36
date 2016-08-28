@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 
 class EntityManager;
+class Weapon;
 
 class Entity : public sf::NonCopyable{
 public:
@@ -49,7 +50,11 @@ public:
 
 	bool isActive() const;
 	void setActive(bool active);
+
+	void setWeapon(Weapon* weapon);
 protected:
+	Weapon* weapon_;
+
 	bool rotating_;
 	void destroy();
 
@@ -64,6 +69,7 @@ protected:
 	sf::Sprite sprite_;
 
 	void setWalkthrough(bool walkthrough);
+	int health_;
 private:
 	bool active_; //Active if visible and moving. Inactive means not visible and not moving (e.g. in unlit room).
 

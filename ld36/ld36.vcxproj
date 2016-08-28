@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BasicSword.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Door.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -162,13 +163,16 @@
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="StaticObj.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="SwordChest.cpp" />
     <ClCompile Include="Trap.cpp" />
     <ClCompile Include="TrapChest.cpp" />
     <ClCompile Include="TrapInterface.cpp" />
     <ClCompile Include="Mummy.cpp" />
+    <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseState.h" />
+    <ClInclude Include="BasicSword.h" />
     <ClInclude Include="Chest.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Door.h" />
@@ -186,11 +190,13 @@
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="StaticObj.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="SwordChest.h" />
     <ClInclude Include="Trap.h" />
     <ClInclude Include="TrapChest.h" />
     <ClInclude Include="TrapInferface.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Mummy.h" />
+    <ClInclude Include="Weapon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ResourceManager.inl" />

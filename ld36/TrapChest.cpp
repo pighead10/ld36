@@ -11,10 +11,8 @@ TrapChest::TrapChest(ResourceManager<sf::Texture, std::string>* resource_manager
 
 TrapChest::~TrapChest() = default;
 
-void TrapChest::collided(Entity* other) {
-	if (other->getType() == TYPE_PLAYER) {
-		Trap* trap = new Trap(trap_name_, message_type_, entityManager_);
-		entityManager_->addTrap(trap);
-		destroy();
-	}
+void TrapChest::doChest(Entity* player) {
+	Trap* trap = new Trap(trap_name_, message_type_, entityManager_);
+	entityManager_->addTrap(trap);
+	destroy();
 }

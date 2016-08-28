@@ -11,6 +11,8 @@ public:
 	void doCotm();
 	bool getCotm() const;
 private:
+	int timer_;
+
 	bool cotm_;
 	int room_num_;
 	float speed_;
