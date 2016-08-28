@@ -1,27 +1,22 @@
 #include <iostream>
 #include <SFML/Network.hpp>
 #include <SFML/Graphics.hpp>
+#include "../ld36/PlayerInfo.h"
 #include <vector>
 #include <memory>
+#include <fstream>
 
-#define PORT 5337 
-#define IP 82.23.253.24
 #define SEND_DELAY 100
 
-struct PlayerInfo {
-	int player_no;
-	int room_no;
-	std::string name;
-};
-
-sf::Packet& operator <<(sf::Packet& packet, const PlayerInfo& m)
+sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
 {
-	return packet << m.player_no << m.room_no << m.name;
+	return packet << m.msg_type << m.player_no << m.room_no << m.name;
 }
 sf::Packet& operator >> (sf::Packet& packet, PlayerInfo& m)
 {
-	return packet >> m.player_no >> m.room_no >> m.name;
+	return packet >> m.msg_type >> m.player_no >> m.room_no >> m.name;
 }
+
 
 void sendToClients(std::vector<std::shared_ptr<sf::TcpSocket>>* clients, sf::Packet packet) {
 	for (auto& it : (*clients)) {
@@ -36,10 +31,18 @@ void setClientBlocking(std::vector<std::shared_ptr<sf::TcpSocket>>* clients, boo
 }
 
 int main() {
+	std::string ip;
+	std::string port;
+	std::ifstream fin("serverinfo.txt");
+	fin >> ip;
+	fin >> port;
+
+	int port_num = stoi(port);
+
 	sf::TcpListener listener;
-	listener.listen(PORT);
+	listener.listen(port_num);
 	listener.setBlocking(false);
-	std::cout << "Listening for connections on port " << PORT << ". Press s to start game." << std::endl;
+	std::cout << "Listening for connections on port " << port_num << ". Press s to start game." << std::endl;
 	bool started = false;
 	std::vector<std::shared_ptr<sf::TcpSocket>> clients;
 	std::vector<PlayerInfo> players;
@@ -73,8 +76,19 @@ int main() {
 		for (int i = 0; i < clients.size(); i++) {
 			sf::Packet rec;
 			if (clients[i]->receive(rec) == sf::Socket::Done) {
-				rec >> players[i];
-				std::cout << "Received info: Player number: " << players[i].player_no << " Name: " << players[i].name << " Room: " << players[i].room_no << std::endl;
+				PlayerInfo info;
+				rec >> info;
+				std::cout << "Received packet. Type num is: " << info.msg_type << std::endl;
+				//MessageType type = static_cast<MessageType>(info.msg_type);
+				if (info.msg_type == MESSAGE_INFO) {
+					players[i] = info;
+					std::cout << "Received info: Player number: " << players[i].player_no << " Name: " << players[i].name << " Room: " << players[i].room_no << std::endl;
+				}
+				else if (info.msg_type == MESSAGE_TRAP_RED) {
+					std::cout << "Received red trap request in room " << info.room_no << ". Sending trap to clients." << std::endl;
+					sendToClients(&clients, rec);
+				}
+				
 			}
 		}
 		if (clock.getElapsedTime().asMilliseconds() > SEND_DELAY) {

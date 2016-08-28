@@ -9,10 +9,25 @@
 class EntityManager;
 class Player;
 class Entity;
-class PlayerInfo;
+class Door;
+
+struct DoorConditions {
+	DoorConditions(int p, int r) : room(r), players(p) {}
+	int room;
+	int players;
+};
+
+typedef std::vector<DoorConditions> DoorConditionsList;
 
 class Room {
 public:
+	enum DoorPosition {
+		DOOR_TOP,
+		DOOR_LEFT,
+		DOOR_RIGHT,
+		DOOR_BOT
+	};
+
 	Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager, Player* player,
 		ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos);
 	~Room();
@@ -21,9 +36,16 @@ public:
 	bool getLit() const;
 
 	void add(Entity* entity, sfld::Vector2f local_position);
+	void addDoor(DoorPosition position, DoorConditionsList conditions);
+
+	sf::Text getRoomText() const;
 
 	void update(int frame_time);
+	void playerTouchedWall(Entity* door);
 private:
+	DoorConditionsList getConditionsFromDoor(Entity* door);
+
+	sf::Text room_text_;
 	sf::FloatRect room_area_;
 
 	void generateRoom();
@@ -39,4 +61,8 @@ private:
 	std::vector<PlayerInfo>* player_infos_;
 
 	std::vector<Entity*> entities_;
+	std::vector<std::pair<Door*, DoorConditionsList>> doors_;
+
+	int midx_;
+	int midy_;
 };

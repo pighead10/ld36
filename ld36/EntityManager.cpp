@@ -4,11 +4,23 @@
 #include "SFLD.h"
 #include "ResourceManager.h"
 
-EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager):resourceManager_(resourceManager){
+EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager, std::vector<PlayerInfo>* player_infos):
+	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false){
 	view_ = SFLD::window_->getDefaultView();
+	red_tex.create(1024, 768);
+	red_tex.clear(sf::Color::Red);
+	font_.loadFromFile("media/Futura_ICG.ttf");
 }
 
 EntityManager::~EntityManager() = default;
+
+void EntityManager::renderText(sf::Text text) {
+	texts_.push_back(text);
+}
+
+sf::Font* EntityManager::getFont() {
+	return &font_;
+}
 
 void EntityManager::setViewFocus(Entity* entity) {
 	view_.setCenter(entity->getPosition());
@@ -27,7 +39,20 @@ void EntityManager::clear(){
 	push_queue_.clear();
 }
 
+void EntityManager::doRedTrap() {
+	red_trap_ = true;
+	red_timer_ = 0;
+}
+
 void EntityManager::update(int frameTime){
+	texts_.clear();
+	if (red_trap_) {
+		red_timer_ += frameTime;
+		if (red_timer_ >= 2000) {
+			red_trap_ = false;
+		}
+	}
+
 	for (auto& it : entities_){
 		if (it->isActive()) {
 			it->update(frameTime);
@@ -54,5 +79,15 @@ void EntityManager::render(sf::RenderTarget* target){
 		if (it->isActive()) {
 			it->render(target);
 		}
+	}
+	if (red_trap_) {
+		SFLD::window_->setView(SFLD::window_->getDefaultView());
+		sf::Sprite red(red_tex.getTexture());
+		target->draw(red);
+		SFLD::window_->setView(view_);
+	}
+	for (auto& it : texts_) {
+		//std::cout << "render text" << std::endl;
+		target->draw(it);
 	}
 }
