@@ -6,6 +6,7 @@
 #include "EntityManager.h"
 #include "Player.h"
 #include "Room.h"
+#include "Trap.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -21,12 +22,16 @@ GameState::GameState() = default;
 GameState::~GameState() = default;
 
 void GameState::sfmlEvent(sf::Event evt){
-	if (evt.type == sf::Event::Closed || (evt.type == sf::Event::KeyPressed && evt.key.code == sf::Keyboard::Escape)) {
+	if (evt.type == sf::Event::Closed) {
 		getParent().pop();
 	}
 	else if (evt.type == sf::Event::KeyPressed && evt.key.code == sf::Keyboard::T) {
 		//temp: Press T to detonate red trap in room 1
 		sendTrap(MESSAGE_TRAP_RED, 1);
+	}
+
+	if (evt.type == sf::Event::KeyPressed) {
+		trap_interface_->keyPressed(evt.key.code);
 	}
 }
 
@@ -65,6 +70,13 @@ void GameState::connectAndWait() {
 
 void GameState::start(){
 	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_));
+
+	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get()));
+	Trap* trap1 = new Trap("trap 1");
+	Trap* trap2 = new Trap("trap 2");
+	trap_interface_->addTrap(trap1);
+	trap_interface_->addTrap(trap2);
+
 
 	resourceManager_.setDirectory("media/images/");
 	resourceManager_.load("player", "pig.png");
@@ -157,6 +169,7 @@ void GameState::render(sf::RenderTarget* target){
 		target->draw(it->getRoomText());
 	}
 	entity_manager_->render(target);
+	entity_manager_->renderTrapInterface(trap_interface_.get(),target);
 }
 
 void GameState::generateRooms(int room_root) {
@@ -210,8 +223,8 @@ void GameState::receiveData() {
 /*
 Feature list to create next:
 -Display room numbers X
--Display conditions for doors opening
--Add chests with give you the ability to place traps or gain weapons
+-Display conditions for doors opening X
+-Add chests which give you the ability to place traps or gain weapons
 -First trap to add: Curse trap, zombies spawn in rooms you are in but don't follow you to other rooms.
 -Add weapon
 -Then add randomly spawning enemies in rooms sometimes

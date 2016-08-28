@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "SFLD.h"
 #include "ResourceManager.h"
+#include "TrapInferface.h"
 
 EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager, std::vector<PlayerInfo>* player_infos):
 	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false){
@@ -73,6 +74,12 @@ void EntityManager::update(int frameTime){
 	push_queue_.clear();
 }
 
+void EntityManager::renderTrapInterface(TrapInterface* trap_interface,sf::RenderTarget* target) {
+	SFLD::window_->setView(SFLD::window_->getDefaultView());
+	trap_interface->render(target);
+	SFLD::window_->setView(view_);
+}
+
 void EntityManager::render(sf::RenderTarget* target){
 	SFLD::window_->setView(view_);
 	for (auto& it : entities_){
@@ -87,7 +94,6 @@ void EntityManager::render(sf::RenderTarget* target){
 		SFLD::window_->setView(view_);
 	}
 	for (auto& it : texts_) {
-		//std::cout << "render text" << std::endl;
 		target->draw(it);
 	}
 }

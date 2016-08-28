@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "PlayerInfo.h"
 #include "Room.h"
+#include "TrapInferface.h"
 
 class EntityManager;
 class Player;
@@ -53,4 +54,5 @@ private:
 	ResourceManager<sf::Texture, std::string> resourceManager_;
 
 	SolutionList solution_;
+	std::unique_ptr<TrapInterface> trap_interface_;
 };

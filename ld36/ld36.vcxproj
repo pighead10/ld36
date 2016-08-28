@@ -158,12 +158,16 @@
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="SFLD.cpp" />
     <ClCompile Include="SoundManager.cpp" />
+    <ClCompile Include="Chest.cpp" />
     <ClCompile Include="StateManager.cpp" />
     <ClCompile Include="StaticObj.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Trap.cpp" />
+    <ClCompile Include="TrapInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseState.h" />
+    <ClInclude Include="Chest.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Door.h" />
     <ClInclude Include="Entity.h" />
@@ -180,6 +184,9 @@
     <ClInclude Include="StateManager.h" />
     <ClInclude Include="StaticObj.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Trap.h" />
+    <ClInclude Include="TrapChest.h" />
+    <ClInclude Include="TrapInferface.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>

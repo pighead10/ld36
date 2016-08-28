@@ -8,6 +8,7 @@
 
 class Entity;
 class ParticleEngine;
+class TrapInterface;
 
 typedef std::vector<std::unique_ptr<Entity>> EntityList;
 
@@ -30,6 +31,7 @@ public:
 
 	void doRedTrap();
 	void renderText(sf::Text text);
+	void renderTrapInterface(TrapInterface* trap_interface, sf::RenderTarget* target);
 private:
 	sf::Font font_;
 
