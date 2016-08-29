@@ -21,7 +21,8 @@ public:
 		TYPE_PLAYER,
 		TYPE_DOOR,
 		TYPE_CHEST,
-		TYPE_MUMMY
+		TYPE_MUMMY,
+		TYPE_WIN
 	};
 	Entity();
 	~Entity();

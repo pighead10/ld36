@@ -10,6 +10,7 @@
 #include "TrapChest.h"
 #include "Mummy.h"
 #include "SwordChest.h"
+#include "WinBlock.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -83,10 +84,11 @@ void GameState::connectAndWait() {
 }
 
 void GameState::start(){
-	int room_root = 12;
-	room_size_ = room_root * TILE_SIZE;
+	game_ended_ = false;
+	row_size_ = 12;
+	room_size_ = row_size_ * TILE_SIZE;
 	
-	int max_rooms = room_root*room_root;
+	int max_rooms = room_size_*room_size_;
 	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_,this,room_size_));
 
 	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get(),max_rooms));
@@ -100,11 +102,12 @@ void GameState::start(){
 	resourceManager_.load("trapchest", "trapchest.png");
 	resourceManager_.load("mummy", "mummy.png");
 	resourceManager_.load("wepchest", "wepchest.png");
+	resourceManager_.load("treasure", "treasure.png");
 
 	connectAndWait();
 	//player_no_ = 3;
 	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
-	generateRooms(room_root);
+	generateRooms(row_size_);
 	generateMap(max_rooms);
 
 	
@@ -112,11 +115,6 @@ void GameState::start(){
 
 	//Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "mummy", 0.1f, player_, 50);
 	//entity_manager_->addEntity(mummy);
-
-	
-
-	
-
 	rooms_[spawn_room_]->add(player_, sfld::Vector2f(50, 50));
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
@@ -125,6 +123,7 @@ void GameState::start(){
 	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
 
 	SwordChest* schest = new SwordChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
+
 	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
 	rooms_[0]->add(chest2, sfld::Vector2f(400, 400));
 	rooms_[0]->add(schest, sfld::Vector2f(200, 400));
@@ -139,6 +138,10 @@ void GameState::resume(){
 void GameState::exit(){
 }
 
+void GameState::won() {
+	sendTrap(MESSAGE_WIN, 0);
+}
+
 void GameState::generateDoor(DoorConditionsList condition, int room) {
 	//Generate all doors on room
 	for (int i = 0; i < 4; i++) {
@@ -148,6 +151,7 @@ void GameState::generateDoor(DoorConditionsList condition, int room) {
 }
 
 void GameState::generateMap(int max_rooms) {
+	srand(time(NULL));
 	//Receive solution;
 	bool done = false;	
 	ConditionList list;
@@ -174,10 +178,15 @@ void GameState::generateMap(int max_rooms) {
 		}
 	}
 
+	int win_step = 0;
+	int win_room = 0;
+
 	for (int i = 1; i < solution_.size(); i++) {
 		ConditionList list = solution_[i];
 		for (auto& cond : list) {
 			if (cond.player_no == player_no_) {
+				win_room = cond.room_no;
+				win_step = i;
 				ConditionList prev_list = solution_[i - 1];
 				std::vector<int> players(max_rooms, 0);
 				for (auto& prev : prev_list) {
@@ -193,19 +202,69 @@ void GameState::generateMap(int max_rooms) {
 			}
 		}
 	}
+
+	ConditionList win_list = solution_[win_step];
+
+	std::vector<int> players(max_rooms, 0);
+	for (auto& prev : win_list) {
+		players[prev.room_no]++;
+	}
+	DoorConditionsList win_cond_list;
+	for (int n = 0; n < players.size(); n++) {
+		if (players[n] != 0) {
+			win_cond_list.push_back(DoorConditions(players[n], n));
+		}
+	}
+	int final_x;
+	int final_y;
+	float step = 1;
+	int final_room = 0;
+	do {
+		int cap = floor(step);
+		if (cap > 10) cap = 10;
+		int spawn_dist = rand() % cap + 1;
+		int compx = rand() % spawn_dist;
+		int compy = spawn_dist - compx;
+		int negx = rand() % 2;
+		int negy = rand() % 2;
+		if (negx) compx = -compx;
+		if (negy) compy = -compy;
+		final_x = roomNumToCoord(win_room).x + compx;
+		final_y = roomNumToCoord(win_room).y + compy;
+		final_room = coordToRoomNum(sf::Vector2i(final_x, final_y));
+		std::cout << "attempted room door: x " << final_x << " y " << final_y << std::endl;
+		step+=0.5f;
+	} while (final_x < 0 || final_x >= row_size_ || final_y < 0 || final_y >= row_size_ ||
+		rooms_[final_room]->containsDoors());
+
+	WinBlock* win = new WinBlock(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
+	generateDoor(win_cond_list, final_room);
+	rooms_[win_room]->add(win, sfld::Vector2f(100, 100));
+}
+
+sf::Vector2i GameState::roomNumToCoord(int n) const{
+	int x = floor(n / (float)row_size_);
+	int y = n % row_size_;
+	return sf::Vector2i(x, y);
+}
+
+int GameState::coordToRoomNum(sf::Vector2i coord) const{
+	return coord.x * row_size_ + coord.y;
 }
 
 void GameState::update(int frameTime){
-	entity_manager_->update(frameTime);
-	for (auto& it : rooms_) {
-		it->update(frameTime);
-	}
-	sendData();
-	receiveData();
-	//output all data
-	//std::cout << "Networked info of all players:" << std::endl;
-	for (auto& it : player_infos_) {
-		//std::cout << "Num: " << it.player_no << " Name: " << it.name << " Room number: " << it.room_no << std::endl;
+	if (!game_ended_) {
+		entity_manager_->update(frameTime);
+		for (auto& it : rooms_) {
+			it->update(frameTime);
+		}
+		sendData();
+		receiveData();
+		//output all data
+		//std::cout << "Networked info of all players:" << std::endl;
+		for (auto& it : player_infos_) {
+			//std::cout << "Num: " << it.player_no << " Name: " << it.name << " Room number: " << it.room_no << std::endl;
+		}
 	}
 }
 
@@ -260,6 +319,15 @@ void GameState::receiveData() {
 			}
 			else {
 				std::cout << "WTF? Received player info num: " << info.player_no << std::endl;
+			}
+		}
+		else if(info.msg_type == MESSAGE_WIN){
+			game_ended_ = true;
+			if (info.player_no == player_no_) {
+				entity_manager_->displayTemporaryMessage("You won!");
+			}
+			else {
+				entity_manager_->displayTemporaryMessage("You lost! Player " + std::to_string(info.player_no) + " reached the treasure!");
 			}
 		}
 		else {

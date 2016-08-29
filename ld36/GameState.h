@@ -34,7 +34,11 @@ public:
 
 	void sendTrap(MessageType type, int room_no);
 	Room* getRoom(int n);
+
+	void won();
 private:
+	bool game_ended_;
+
 	void sendData();
 	void receiveData();
 	void connectAndWait();
@@ -48,6 +52,7 @@ private:
 
 	int room_size_;
 	int spawn_room_;
+	int row_size_;
 
 
 	PlayerInfo old_data_;
@@ -60,4 +65,7 @@ private:
 
 	SolutionList solution_;
 	std::unique_ptr<TrapInterface> trap_interface_;
+
+	sf::Vector2i roomNumToCoord(int n) const;
+	int coordToRoomNum(sf::Vector2i coord) const;
 };

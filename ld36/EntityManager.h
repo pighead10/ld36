@@ -42,6 +42,10 @@ public:
 	sf::RenderTexture* getUnlitTexture();
 
 	Room* getRoom(int n);
+
+	void displayTemporaryMessage(std::string text);
+
+	void won();
 private:
 	TrapInterface* trap_interface_;
 	GameState* game_state_;
@@ -62,4 +66,8 @@ private:
 	std::vector<sf::Text> texts_;
 	sf::RenderTexture lit_tex_;
 	sf::RenderTexture unlit_tex_;
+
+	sf::Text temp_text_;
+	int temp_timer_;
+	bool display_temp_;
 };

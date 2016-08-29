@@ -46,6 +46,8 @@ public:
 
 	void doCotm(int frame_time);
 	void setCotmReady();
+
+	bool containsDoors() const;
 private:
 	int cotm_it;
 	int cotm_timer;

@@ -154,6 +154,8 @@
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="maths.cpp" />
+    <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ParticleEngine.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Projection.cpp" />
     <ClCompile Include="Room.cpp" />
@@ -169,6 +171,7 @@
     <ClCompile Include="TrapInterface.cpp" />
     <ClCompile Include="Mummy.cpp" />
     <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="WinBlock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseState.h" />
@@ -197,6 +200,7 @@
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Mummy.h" />
     <ClInclude Include="Weapon.h" />
+    <ClInclude Include="WinBlock.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ResourceManager.inl" />

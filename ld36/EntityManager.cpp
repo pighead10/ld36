@@ -8,7 +8,7 @@
 #include "Trap.h"
 
 EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state, int room_size):
-	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false),game_state_(game_state),room_size_(room_size){
+	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false),game_state_(game_state),room_size_(room_size),temp_timer_(0),display_temp_(false){
 	view_ = SFLD::window_->getDefaultView();
 	red_tex.create(1024, 768);
 	red_tex.clear(sf::Color::Red);
@@ -17,9 +17,24 @@ EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resource
 	unlit_tex_.create(room_size, room_size);
 	lit_tex_.clear(sf::Color(102, 59, 23));
 	unlit_tex_.clear(sf::Color(46, 27, 11));
+
+	temp_text_.setFont(font_);
+	temp_text_.setCharacterSize(22);
 }
 
 EntityManager::~EntityManager() = default;
+
+void EntityManager::won() {
+	game_state_->won();
+}
+
+void EntityManager::displayTemporaryMessage(std::string text) {
+	temp_text_.setString(text);
+	temp_text_.setOrigin(temp_text_.getLocalBounds().width / 2, temp_text_.getLocalBounds().height / 2);
+	temp_text_.setPosition(1024 / 2, 768 / 2 - 200);
+	display_temp_ = true;
+	temp_timer_ = 0;
+}
 
 sf::RenderTexture* EntityManager::getUnlitTexture() {
 	return &unlit_tex_;
@@ -97,6 +112,16 @@ void EntityManager::update(int frameTime){
 		}
 	}
 
+	if (display_temp_) {
+		temp_timer_ += frameTime;
+		if (temp_timer_ >= 1500 && temp_timer_ < 3000) {
+			temp_text_.setPosition(temp_text_.getPosition() + sf::Vector2f(0, -0.3f));
+		}
+		else if (temp_timer_ >= 3000) {
+			display_temp_ = false;
+		}
+	}
+
 	for (auto& it : push_queue_){
 		entities_.push_back(std::move(it));
 	}
@@ -124,5 +149,10 @@ void EntityManager::render(sf::RenderTarget* target){
 	}
 	for (auto& it : texts_) {
 		target->draw(it);
+	}
+	if (display_temp_) {
+		SFLD::window_->setView(SFLD::window_->getDefaultView());
+		target->draw(temp_text_);
+		SFLD::window_->setView(view_);
 	}
 }

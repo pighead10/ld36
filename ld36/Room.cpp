@@ -62,6 +62,10 @@ void Room::setLit(bool lit) {
 	}
 }
 
+bool Room::containsDoors() const{
+	return (doors_.size() > 0);
+}
+
 bool Room::getLit() const {
 	return lit_;
 }
@@ -117,7 +121,10 @@ void Room::update(int frame_time) {
 			}
 		}
 		if(open){
-			it.first->setOpen(true);
+			if (!it.first->isOpen()) {
+				entity_manager_->displayTemporaryMessage("Door to room " + std::to_string(room_num_) + " opened!");
+				it.first->setOpen(true);
+			}
 		} //TODO: else close?
 	}
 

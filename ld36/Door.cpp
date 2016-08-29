@@ -2,9 +2,13 @@
 #include "Door.h"
 #include "Room.h"
 
-Door::Door(ResourceManager<sf::Texture, std::string>* resource_manager, EntityManager* entity_manager, sfld::Vector2f position, bool open, Room* parent):parent_(parent) {
+Door::Door(ResourceManager<sf::Texture, std::string>* resource_manager, EntityManager* entity_manager, sfld::Vector2f position, bool open, Room* parent):parent_(parent), open_(open){
 	constructEntity(resource_manager, "door_closed", entity_manager, position, false, Entity::SHAPE_SQUARE, Entity::DYNAMIC_STATIC, Entity::TYPE_DOOR);
 	setOpen(open);
+}
+
+bool Door::isOpen() const {
+	return open_;
 }
 
 void Door::collided(Entity* entity) {
@@ -14,6 +18,7 @@ void Door::collided(Entity* entity) {
 }
 
 void Door::setOpen(bool open) {
+	open_ = open;
 	if (open) {
 		sprite_.setTexture(resourceManager_->get("door_open"));
 		setWalkthrough(true);

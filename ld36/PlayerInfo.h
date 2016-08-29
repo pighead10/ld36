@@ -7,6 +7,7 @@ enum MessageType {
 	MESSAGE_INFO,
 	MESSAGE_TRAP_RED,
 	MESSAGE_TRAP_COTM,
+	MESSAGE_WIN
 };
 
 struct PlayerInfo {

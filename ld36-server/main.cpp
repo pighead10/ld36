@@ -75,16 +75,16 @@ int main() {
 		if (listener.accept(*client) == sf::Socket::Done) {
 			std::cout << "New connection received from " << client->getRemoteAddress() << std::endl;
 			clients.push_back(client);
-			players.push_back(PlayerInfo());
+			//players.push_back(PlayerInfo());
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
 			started = true;
 		}
 	}
 
-	/*for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++) {
 		players.push_back(PlayerInfo());
-	}*/
+	}
 
 	int total_players = players.size();
 
@@ -218,7 +218,6 @@ int main() {
 	sendToClients(&clients, ep);
 	std::cout << "sending end" << std::endl;
 	
-
 	setClientBlocking(&clients, false);
 
 	bool running = true;
@@ -239,7 +238,10 @@ int main() {
 					std::cout << "Received red trap request in room " << info.room_no << ". Sending trap to clients." << std::endl;
 					sendToClients(&clients, rec);
 				}
-				
+				else if (info.msg_type == MESSAGE_WIN) {
+					std::cout << "Player won the game!" << std::endl;
+					sendToClients(&clients, rec);
+				}
 			}
 		}
 		if (clock.getElapsedTime().asMilliseconds() > SEND_DELAY) {
@@ -253,7 +255,6 @@ int main() {
 			clock.restart();
 		}
 	}
-	
 
 	return 0;
 }

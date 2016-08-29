@@ -84,6 +84,15 @@
     <ClCompile Include="SwordChest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WinBlock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResourceManager.h">
@@ -162,6 +171,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SwordChest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
