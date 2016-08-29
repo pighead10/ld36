@@ -9,5 +9,5 @@ public:
 	void collided(Entity* other);
 protected:
 	virtual void doChest(Entity* player);
-
+	bool awarded_;
 };

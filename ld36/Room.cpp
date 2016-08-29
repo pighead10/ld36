@@ -6,16 +6,22 @@
 #include "StaticObj.h"
 #include "Door.h"
 #include "Mummy.h"
+#include <iomanip>
+#include <sstream>
+#include "ParticleEngine.h"
+#include "Locust.h"
+#include "SoundManager.h"
 
 Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager,
-	Player* player, ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos) :
+	Player* player, ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos,DoorOrientation orientation) :
 	world_coords_(world_coords), room_size_(room_size), entity_manager_(entity_manager), player_(player),
-	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos),cotm_it(0),cotm_timer(0),cotm_ready(false){
+	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos),cotm_it(0),cotm_timer(0),cotm_ready(false),
+	cotp_(false),cotp_timer_(0),cotp_started_(false), orientation_(orientation) {
 	room_area_ = sf::FloatRect(world_coords, sfld::Vector2f(room_size, room_size));
 	room_text_.setFont(*entity_manager->getFont());
 	room_text_.setCharacterSize(room_size - 8*TILE_SIZE);
 	room_text_.setString(std::to_string(room_num));
-	room_text_.setOrigin(room_text_.getGlobalBounds().left + room_text_.getGlobalBounds().width / 2, room_text_.getGlobalBounds().top + room_text_.getGlobalBounds().height / 2);
+	room_text_.setOrigin(room_text_.getLocalBounds().left + room_text_.getLocalBounds().width / 2, room_text_.getLocalBounds().top + room_text_.getLocalBounds().height / 2);
 	room_text_.setPosition(room_area_.left + room_area_.width / 2, room_area_.top + room_area_.height / 2);
 	room_text_.setFillColor(sf::Color(255,255,255,100));
 	generateRoom();
@@ -78,76 +84,132 @@ void Room::setCotmReady() {
 	cotm_ready = true;
 }
 
+void Room::addCotp() {
+	cotp_ = true;
+	cotp_spr_.setTexture(resource_manager_->get("cotp"));
+	cotp_spr_.setOrigin(cotp_spr_.getLocalBounds().width / 2, cotp_spr_.getLocalBounds().height / 2);
+	sfld::Vector2f centre(room_area_.left + room_area_.width / 2, room_area_.top + room_area_.height / 2);
+	cotp_spr_.setPosition(centre);
+	cotp_text_.setFont(*entity_manager_->getFont());
+	cotp_text_.setCharacterSize(30);
+	cotp_text_.setFillColor(sf::Color::White);
+}
+
 void Room::update(int frame_time) {
-	if (player_->getRoomNum() == room_num_) {
-		if (player_->getCotm()) {
-			doCotm(frame_time);
-		}
-		else if (cotm_ready) {
-			player_->doCotm();
-		}
-	}
-
-	//Remove all entities that have been destroyed by EntityManager, which will be null pointers
-	for (auto& it = entities_.begin(); it != entities_.end();) {
-		if (*it == NULL) {
-			it = entities_.erase(it);
-		}
-		else {
-			it++;
-		}
-	}
-
-	//Determine whether player is in this room
-	if (room_area_.contains(player_->getPosition())) {
-		setLit(true);
-		player_->setRoomNum(room_num_);
-	}
-	else {
-		setLit(false);
-	}
-
-	for (auto& it : doors_) {
-		int count = 0;
-		std::vector<int> counts(1000, 0); //TODO change 1000...
-		for (auto& info : *player_infos_) {
-			counts[info.room_no]++;
-		}
-		bool open = true;
-		for (auto& it : it.second) {
-			if (counts[it.room] < it.players) {
-				open = false;
-				break;
+	if (player_ != NULL) {
+		if (player_->getRoomNum() == room_num_) {
+			if (player_->getCotm()) {
+				doCotm(frame_time);
 			}
-		}
-		if(open){
-			if (!it.first->isOpen()) {
-				entity_manager_->displayTemporaryMessage("Door to room " + std::to_string(room_num_) + " opened!");
-				it.first->setOpen(true);
+			else if (cotm_ready) {
+				player_->doCotm();
 			}
-		} //TODO: else close?
-	}
+			if (cotp_ && !cotp_started_) {
+				SoundManager::play("scaryscream");
+				cotp_started_ = true;
+				cotp_timer_ = 2000;
 
-	//Scan player infos for traps etc.
-	for (auto& it = player_infos_->begin(); it != player_infos_->end();) {
-		if (it->msg_type != MESSAGE_INFO && it->room_no == room_num_) {
-			//Pop traps once read
-			if (it->room_no == room_num_) {
-				if (it->msg_type == MESSAGE_TRAP_RED && player_->getRoomNum() == room_num_) {	
-					std::cout << "Blinding light activated" << std::endl;
-					entity_manager_->doRedTrap();
-				}
-				else if (it->msg_type == MESSAGE_TRAP_COTM) {
-					std::cout << "Curse of the mummy activated" << std::endl;
-					setCotmReady();
+			}
+			if (cotp_started_) {
+				cotp_timer_ -= frame_time;
+				std::stringstream stream;
+				stream << std::fixed << std::setprecision(3) << (float)(cotp_timer_ / 1000.0f);
+				cotp_text_.setString(stream.str());
+				cotp_text_.setOrigin(cotp_text_.getLocalBounds().width / 2, cotp_text_.getLocalBounds().height / 2);
+				sfld::Vector2f centre(room_area_.left + room_area_.width / 2, room_area_.top + room_area_.height / 2);
+				cotp_text_.setPosition(centre);
+
+				if (cotp_timer_ <= 0) {
+					cotp_ = false;
+					cotp_started_ = false;
+					entity_manager_->getParticleEngine()->generatePurpleExplosionEffect(centre);
+					SoundManager::play("explosionfuture");
+					player_->damaged(100);
 				}
 			}
-			it = player_infos_->erase(it);
 		}
 		else {
-			it++;
+			cotp_timer_ = 0;
+			cotp_started_ = false;
+		}
+
+		//Remove all entities that have been destroyed by EntityManager, which will be null pointers
+		for (auto& it = entities_.begin(); it != entities_.end();) {
+			if (*it == NULL) {
+				it = entities_.erase(it);
+			}
+			else {
+				it++;
+			}
+		}
+
+		//Determine whether player is in this room
+		if (room_area_.contains(player_->getPosition())) {
+			setLit(true);
+			player_->setRoomNum(room_num_);
+		}
+		else {
+			setLit(false);
+		}
+
+		for (auto& it : doors_) {
+			int count = 0;
+			std::vector<int> counts(1000, 0); //TODO change 1000...
+			for (auto& info : *player_infos_) {
+				counts[info.room_no]++;
+			}
+			bool open = true;
+			for (auto& it : it.second) {
+				if (counts[it.room] < it.players) {
+					open = false;
+					break;
+				}
+			}
+			if (open) {
+				if (!it.first->isOpen()) {
+					SoundManager::play("dooropen");
+					entity_manager_->displayTemporaryMessage("Door to room " + std::to_string(room_num_) + " opened!");
+					it.first->setOpen(true);
+				}
+			} //TODO: else close?
+		}
+
+		//Scan player infos for traps etc.
+		for (auto& it = player_infos_->begin(); it != player_infos_->end();) {
+			if (it->msg_type != MESSAGE_INFO && it->room_no == room_num_) {
+				//Pop traps once read
+				if (it->room_no == room_num_) {
+					if (it->msg_type == MESSAGE_TRAP_RED && player_->getRoomNum() == room_num_) {
+						std::cout << "Blinding light activated" << std::endl;
+						SoundManager::play("trap");
+						entity_manager_->doRedTrap();
+					}
+					else if (it->msg_type == MESSAGE_TRAP_COTM) {
+						std::cout << "Curse of the mummy activated" << std::endl;
+						setCotmReady();
+					}
+					else if (it->msg_type == MESSAGE_TRAP_COTP) {
+						std::cout << "Curse of the pharaoh activated" << std::endl;
+						addCotp();
+					}
+					else if (it->msg_type == MESSAGE_TRAP_LOCUST) {
+						std::cout << "Locust trap activated" << std::endl;
+						addLocust();
+						
+					}
+				}
+				it = player_infos_->erase(it);
+			}
+			else {
+				it++;
+			}
 		}
 	}
+}
+
+void Room::addLocust() {
+	Locust* locust = new Locust(resource_manager_, entity_manager_, sfld::Vector2f(0, 0), "locust", 0.5f, player_, 10);
+	add(locust, sfld::Vector2f(room_size_ / 2, room_size_ / 2));
 }
 
 void Room::doCotm(int frame_time) {
@@ -171,16 +233,29 @@ void Room::generateRoom() {
 	midx_ = (room_area_.left * 2 + room_area_.width) / 2;
 	midy_ = (room_area_.top * 2 + room_area_.height) / 2;
 	for (int x = room_area_.left; x <= room_area_.left + room_area_.width; x += TILE_SIZE) {
-		if (x != midx_ && x != (midx_ + TILE_SIZE)) {
+		if (orientation_ == ORIENTATION_TOP || orientation_ == ORIENTATION_TOPLEFT || orientation_ == ORIENTATION_TOPRIGHT ||(x != midx_ && x != (midx_ + TILE_SIZE))) {
 			entity_manager_->addEntity(new StaticObj(resource_manager_, "wall", entity_manager_, sfld::Vector2f(x, room_area_.top), Entity::SHAPE_SQUARE, Entity::TYPE_WALL));
+		}
+		if (orientation_ == ORIENTATION_BOT || orientation_ == ORIENTATION_BOTLEFT || orientation_ == ORIENTATION_BOTRIGHT || (x != midx_ && x != (midx_ + TILE_SIZE))) {
 			entity_manager_->addEntity(new StaticObj(resource_manager_, "wall", entity_manager_, sfld::Vector2f(x, room_area_.top + room_area_.height), Entity::SHAPE_SQUARE, Entity::TYPE_WALL));
 		}
 	}
 	
 	for (int y = room_area_.top+TILE_SIZE; y <= room_area_.top + room_area_.height-TILE_SIZE; y += TILE_SIZE) {
-		if (y != midy_ && y != (midy_ + TILE_SIZE)) {
+		if (orientation_ == ORIENTATION_LEFT || orientation_ == ORIENTATION_BOTLEFT || orientation_ == ORIENTATION_TOPLEFT || (y != midy_ && y != (midy_ + TILE_SIZE))) {
 			entity_manager_->addEntity(new StaticObj(resource_manager_, "wall", entity_manager_, sfld::Vector2f(room_area_.left, y), Entity::SHAPE_SQUARE, Entity::TYPE_WALL));
+		}
+		if (orientation_ == ORIENTATION_RIGHT || orientation_ == ORIENTATION_BOTRIGHT || orientation_ == ORIENTATION_TOPRIGHT || (y != midy_ && y != (midy_ + TILE_SIZE))) {
 			entity_manager_->addEntity(new StaticObj(resource_manager_, "wall", entity_manager_, sfld::Vector2f(room_area_.left + room_area_.width, y), Entity::SHAPE_SQUARE, Entity::TYPE_WALL));
+		}
+	}
+}
+
+void Room::render(sf::RenderTarget* target) {
+	if (lit_) {
+		if (cotp_) {
+			target->draw(cotp_spr_);
+			target->draw(cotp_text_);
 		}
 	}
 }

@@ -22,7 +22,7 @@ public:
 	void generateBloodEffect(const sf::Vector2f& position);
 	void generateExplosionEffect(const sf::Vector2f& position);
 	void generateMiniExplosionEffect(const sf::Vector2f& position);
-	
+	void generatePurpleExplosionEffect(const sf::Vector2f& position);
 
 	std::map<std::string,std::shared_ptr<Particle>> getParticles();
 	std::map<std::string,std::shared_ptr<Particle>> getStatics();

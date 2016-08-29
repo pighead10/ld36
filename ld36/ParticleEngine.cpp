@@ -119,8 +119,22 @@ void ParticleEngine::generateExplosionEffect(const sf::Vector2f& position){
 	}
 }
 
-void ParticleEngine::renderParticles(sf::RenderTarget* target){
+void ParticleEngine::generatePurpleExplosionEffect(const sf::Vector2f& position) {
+	for (float x = -1; x <= 1;) {
+		for (float y = -1; y <= 1;) {
+			float radius = rand() % 7 + 7;
+			sf::Color colour(rand() % 70 + 100, rand() % 50, 220);
+			sf::Vector2f direction = sfld::Vector2f(x, y).normalise();
+			float r = (float)(rand() % 4 + 3) / 10.0f;
+			float l = 500;
+			std::shared_ptr<Particle> particle = generateParticle(position, 200, colour, radius, direction, 2.0f);
+			y += 0.1;
+		}
+		x += 0.1;
+	}
+}
 
+void ParticleEngine::renderParticles(sf::RenderTarget* target){
 	std::map<std::string,std::shared_ptr<Particle>>::iterator it;
 	for(it = particles.begin();it != particles.end();it++){
 		it->second->draw(target);
@@ -128,7 +142,6 @@ void ParticleEngine::renderParticles(sf::RenderTarget* target){
 }
 
 void ParticleEngine::renderStatics(sf::RenderTarget* target){
-
 	std::map<std::string,std::shared_ptr<Particle>>::iterator it;
 	for(it = statics.begin();it != statics.end();it++){
 		it->second->draw(target);

@@ -11,6 +11,7 @@
 #include "Mummy.h"
 #include "SwordChest.h"
 #include "WinBlock.h"
+#include "ParticleEngine.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -32,10 +33,6 @@ Room* GameState::getRoom(int n) {
 void GameState::sfmlEvent(sf::Event evt){
 	if (evt.type == sf::Event::Closed) {
 		getParent().pop();
-	}
-	else if (evt.type == sf::Event::KeyPressed && evt.key.code == sf::Keyboard::T) {
-		//temp: Press T to detonate red trap in room 1
-		sendTrap(MESSAGE_TRAP_RED, 1);
 	}
 
 	if (evt.type == sf::Event::KeyPressed) {
@@ -86,16 +83,18 @@ void GameState::connectAndWait() {
 void GameState::start(){
 	game_ended_ = false;
 	row_size_ = 12;
-	room_size_ = row_size_ * TILE_SIZE;
+	room_size_ = 16 * TILE_SIZE;
+
+	particle_engine_ = std::unique_ptr<ParticleEngine>(new ParticleEngine());
 	
 	int max_rooms = room_size_*room_size_;
-	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_,this,room_size_));
+	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_, this, room_size_, particle_engine_.get()));
 
 	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get(),max_rooms));
 	entity_manager_->setTrapInterface(trap_interface_.get());
 
 	resourceManager_.setDirectory("media/images/");
-	resourceManager_.load("player", "pig.png");
+	resourceManager_.load("player", "player.png");
 	resourceManager_.load("wall", "wall.png");
 	resourceManager_.load("door_closed", "door_closed.png");
 	resourceManager_.load("door_open", "door_open.png");
@@ -103,8 +102,33 @@ void GameState::start(){
 	resourceManager_.load("mummy", "mummy.png");
 	resourceManager_.load("wepchest", "wepchest.png");
 	resourceManager_.load("treasure", "treasure.png");
+	resourceManager_.load("cotp", "cotp.png");
+	resourceManager_.load("locust", "locust.png");
+
+	SoundManager::add("angryzombie", "media/sound/AngryZombie.ogg");
+	SoundManager::add("coinrattle", "media/sound/CoinRattle.ogg");
+	SoundManager::add("dienoise", "media/sound/DieNoise.ogg");
+	SoundManager::add("dooropen", "media/sound/DoorOpen.ogg");
+	SoundManager::add("explosionfuture", "media/sound/ExplosionFuture.ogg");
+	SoundManager::add("fire", "media/sound/Fire.ogg");
+	SoundManager::add("growl", "media/sound/Growl.ogg");
+	SoundManager::add("locusts", "media/sound/Locusts.ogg");
+	SoundManager::add("metalhit", "media/sound/MetalHit.ogg");
+	SoundManager::add("mummy", "media/sound/Mummy.ogg");
+	SoundManager::add("pickup", "media/sound/PickUp.ogg");
+	SoundManager::add("rockfalling", "media/sound/RockFalling.ogg");
+	SoundManager::add("rockhit", "media/sound/RockHit.ogg");
+	SoundManager::add("scaryscream", "media/sound/ScaryScream.ogg");
+	SoundManager::add("swordswing", "media/sound/SwordSwing.ogg");
+	SoundManager::add("takedamage", "media/sound/TakeDamage.ogg");
+	SoundManager::add("takedamage2", "media/sound/TakeDamage2.ogg");
+	SoundManager::add("trap", "media/sound/Trap.ogg");
+	SoundManager::add("win", "media/sound/Win.ogg");
+	SoundManager::add("zipping", "media/sound/Zipping.ogg");
+	SoundManager::add("lost", "media/sound/Lost.ogg");
 
 	connectAndWait();
+	//spawn_room_ = 0;
 	//player_no_ = 3;
 	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
 	generateRooms(row_size_);
@@ -113,19 +137,21 @@ void GameState::start(){
 	
 	entity_manager_->addEntity(player_);
 
-	//Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "mummy", 0.1f, player_, 50);
-	//entity_manager_->addEntity(mummy);
-	rooms_[spawn_room_]->add(player_, sfld::Vector2f(50, 50));
+	Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(100, 100), "mummy", 0.1f, player_, 50);
+	entity_manager_->addEntity(mummy);
+	rooms_[spawn_room_]->add(player_, sfld::Vector2f(100, 100));
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 
 	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
 	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
+	TrapChest* chest3 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_LOCUST, "Locust Swarm");
 
 	SwordChest* schest = new SwordChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
 
 	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
-	rooms_[0]->add(chest2, sfld::Vector2f(400, 400));
+	rooms_[0]->add(chest2, sfld::Vector2f(300, 300));
+	rooms_[0]->add(chest3, sfld::Vector2f(300, 200));
 	rooms_[0]->add(schest, sfld::Vector2f(200, 400));
 }
 
@@ -139,6 +165,7 @@ void GameState::exit(){
 }
 
 void GameState::won() {
+	SoundManager::play("win");
 	sendTrap(MESSAGE_WIN, 0);
 }
 
@@ -240,6 +267,39 @@ void GameState::generateMap(int max_rooms) {
 	WinBlock* win = new WinBlock(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
 	generateDoor(win_cond_list, final_room);
 	rooms_[win_room]->add(win, sfld::Vector2f(100, 100));
+
+	for (auto& room : rooms_) {
+		if (!room->containsDoors()) {
+			int r = rand() % 2; //50% chance of trap being spawned
+			if (r) {
+				int trapn = rand() % 2;
+				if (trapn == 0){
+					room->addCotp();
+				}
+				else if (trapn == 1) {
+					room->addLocust();
+				}
+			}
+		}
+		int r = rand() % 5;
+		if (!r) { //20% chance of trap chest spawning
+			int trapn = rand() % 4;
+			TrapChest* trap;
+			if (trapn == 0) {
+				trap = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
+			}
+			else if (trapn == 1) {
+				trap = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
+			}
+			else if (trapn == 2) {
+				trap = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTP, "Curse of the Pharaoh");
+			}
+			else if (trapn == 3) {
+				trap = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_LOCUST, "Locust Swarm");
+			}
+
+		}
+	}
 }
 
 sf::Vector2i GameState::roomNumToCoord(int n) const{
@@ -254,6 +314,7 @@ int GameState::coordToRoomNum(sf::Vector2i coord) const{
 
 void GameState::update(int frameTime){
 	if (!game_ended_) {
+		particle_engine_->update(frameTime);
 		entity_manager_->update(frameTime);
 		for (auto& it : rooms_) {
 			it->update(frameTime);
@@ -273,10 +334,16 @@ void GameState::render(sf::RenderTarget* target){
 	for (auto& it : rooms_) {
 		it->renderBackground(target);
 	}
+	particle_engine_->renderStatics(target);
 	for (auto& it : rooms_) {
 		target->draw(it->getRoomText());
 	}
+	for (auto& it : rooms_) {
+		it->render(target);
+	}
 	entity_manager_->render(target);
+	
+	particle_engine_->renderParticles(target);
 	entity_manager_->renderTrapInterface(trap_interface_.get(),target);
 }
 
@@ -284,8 +351,33 @@ void GameState::generateRooms(int room_root) {
 	int room_num = 0;
 	for (int x = 0; x < room_root; x++) {
 		for (int y = 0; y < room_root; y++) {
+			Room::DoorOrientation orientation = Room::ORIENTATION_NONE;
+			if (x == 0 && y == 0) {
+				orientation = Room::ORIENTATION_TOPLEFT;
+			}
+			else if (x == room_root - 1 && y == room_root - 1) {
+				orientation = Room::ORIENTATION_BOTRIGHT;
+			}
+			else if (x == room_root - 1 && y == 0) {
+				orientation = Room::ORIENTATION_TOPRIGHT;
+			}
+			else if (x == 0 && y == room_root - 1) {
+				orientation = Room::ORIENTATION_BOTLEFT;
+			}
+			else if (x == 0) {
+				orientation = Room::ORIENTATION_LEFT;
+			}
+			else if (x == room_root-1) {
+				orientation = Room::ORIENTATION_RIGHT;
+			}
+			else if (y == 0) {
+				orientation = Room::ORIENTATION_TOP;
+			}
+			else if (y == room_root-1) {
+				orientation = Room::ORIENTATION_BOT;
+			}
 			rooms_.push_back(std::unique_ptr<Room>(new Room(room_num, sfld::Vector2f(x*room_size_, y*room_size_),
-				room_size_, entity_manager_.get(), player_, &resourceManager_,&player_infos_)));
+				room_size_, entity_manager_.get(), player_, &resourceManager_,&player_infos_,orientation)));
 			room_num++;
 		}
 	}
@@ -327,6 +419,7 @@ void GameState::receiveData() {
 				entity_manager_->displayTemporaryMessage("You won!");
 			}
 			else {
+				SoundManager::play("lost");
 				entity_manager_->displayTemporaryMessage("You lost! Player " + std::to_string(info.player_no) + " reached the treasure!");
 			}
 		}

@@ -6,9 +6,11 @@
 #include "TrapInferface.h"
 #include "GameState.h"
 #include "Trap.h"
+#include "ParticleEngine.h"
 
-EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state, int room_size):
-	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false),game_state_(game_state),room_size_(room_size),temp_timer_(0),display_temp_(false){
+EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state, int room_size,ParticleEngine* particle_engine):
+	resourceManager_(resourceManager), player_infos_(player_infos),red_trap_(false),game_state_(game_state),room_size_(room_size),temp_timer_(0),display_temp_(false),
+	particle_engine_(particle_engine){
 	view_ = SFLD::window_->getDefaultView();
 	red_tex.create(1024, 768);
 	red_tex.clear(sf::Color::Red);
@@ -20,6 +22,10 @@ EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resource
 
 	temp_text_.setFont(font_);
 	temp_text_.setCharacterSize(22);
+}
+
+ParticleEngine* EntityManager::getParticleEngine() {
+	return particle_engine_;
 }
 
 EntityManager::~EntityManager() = default;

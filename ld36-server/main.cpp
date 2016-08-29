@@ -234,7 +234,7 @@ int main() {
 					players[i] = info;
 					std::cout << "Received info: Player number: " << players[i].player_no << " Name: " << players[i].name << " Room: " << players[i].room_no << std::endl;
 				}
-				else if (info.msg_type == MESSAGE_TRAP_RED || info.msg_type == MESSAGE_TRAP_COTM) {
+				else if (info.msg_type == MESSAGE_TRAP_RED || info.msg_type == MESSAGE_TRAP_COTM || info.msg_type == MESSAGE_TRAP_COTP || info.msg_type == MESSAGE_TRAP_LOCUST) {
 					std::cout << "Received red trap request in room " << info.room_no << ". Sending trap to clients." << std::endl;
 					sendToClients(&clients, rec);
 				}

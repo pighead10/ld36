@@ -28,8 +28,20 @@ public:
 		DOOR_BOT
 	};
 
+	enum DoorOrientation {
+		ORIENTATION_TOP,
+		ORIENTATION_LEFT,
+		ORIENTATION_RIGHT,
+		ORIENTATION_BOT,
+		ORIENTATION_NONE,
+		ORIENTATION_TOPLEFT,
+		ORIENTATION_TOPRIGHT,
+		ORIENTATION_BOTLEFT,
+		ORIENTATION_BOTRIGHT,
+	};
+
 	Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager, Player* player,
-		ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos);
+		ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos,DoorOrientation orientation);
 	~Room();
 
 	void setLit(bool lit);
@@ -48,11 +60,22 @@ public:
 	void setCotmReady();
 
 	bool containsDoors() const;
+	void addCotp();
+	void render(sf::RenderTarget* target);
+
+	void addLocust();
 private:
+	bool cotp_;
+	bool cotp_started_;
+	int cotp_timer_;
+	sf::Text cotp_text_;
+	sf::Sprite cotp_spr_;
+
 	int cotm_it;
 	int cotm_timer;
 	bool cotm_ready;
 
+	DoorOrientation orientation_;
 	DoorConditionsList getConditionsFromDoor(Entity* door);
 
 	sf::Text room_text_;

@@ -22,8 +22,11 @@ public:
 		TYPE_DOOR,
 		TYPE_CHEST,
 		TYPE_MUMMY,
-		TYPE_WIN
+		TYPE_WIN,
+		TYPE_LOCUST
 	};
+	virtual void setSpeed(float speed);
+
 	Entity();
 	~Entity();
 	virtual void constructEntity(ResourceManager<sf::Texture, std::string>* resourceManager, std::string spriteName, EntityManager* entityManager, sfld::Vector2f position, 
@@ -57,7 +60,7 @@ protected:
 	Weapon* weapon_;
 
 	bool rotating_;
-	void destroy();
+	virtual void destroy();
 
 	void centreOrigin();
 	void move(sfld::Vector2f direction,int frameTime,float magnitude); //moves entity, including collisions with walls
@@ -70,10 +73,11 @@ protected:
 
 	void setWalkthrough(bool walkthrough);
 	int health_;
+	bool destroyed_;
 private:
 	bool active_; //Active if visible and moving. Inactive means not visible and not moving (e.g. in unlit room).
 
-	bool destroyed_;
+	
 
 	ENTITY_SHAPE shape_;
 	ENTITY_DYNAMIC dynamic_;

@@ -10,8 +10,13 @@ public:
 	int getRoomNum() const;
 	void doCotm();
 	bool getCotm() const;
+	void damaged(int amount);
+	void setSpeed(float speed);
 private:
+	float base_speed_;
 	int timer_;
+	int slow_timer_;
+	bool slowed_;
 
 	bool cotm_;
 	int room_num_;

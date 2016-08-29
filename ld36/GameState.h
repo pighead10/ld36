@@ -8,6 +8,7 @@
 
 class EntityManager;
 class Player;
+class ParticleEngine;
 
 struct ListCondition {
 	ListCondition(int p, int r):room_no(r),player_no(p){}
@@ -65,6 +66,8 @@ private:
 
 	SolutionList solution_;
 	std::unique_ptr<TrapInterface> trap_interface_;
+
+	std::unique_ptr<ParticleEngine> particle_engine_;
 
 	sf::Vector2i roomNumToCoord(int n) const;
 	int coordToRoomNum(sf::Vector2i coord) const;

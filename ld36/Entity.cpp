@@ -26,6 +26,9 @@ void Entity::constructEntity(
 	weapon_ = NULL;
 }
 
+void Entity::setSpeed(float speed) {
+}
+
 void Entity::setWalkthrough(bool walkthrough){
 	walkthrough_ = walkthrough;
 }
@@ -138,7 +141,7 @@ void Entity::move(sfld::Vector2f direction, int frameTime, float magnitude){
 	}
 	if (direction != sf::Vector2f(0, 0) && !rotating_){
 		//lastdir = dir;
-		sprite_.setRotation(maths::toDegrees(atan2(direction.y, direction.x)));
+		sprite_.setRotation(maths::toDegrees(atan2(direction.y, direction.x))-90);
 	}
 	doOffset(direction*(float)frameTime*magnitude);
 }

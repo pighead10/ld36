@@ -17,7 +17,7 @@ typedef std::vector<std::unique_ptr<Entity>> EntityList;
 
 class EntityManager{
 public:
-	EntityManager(ResourceManager<sf::Texture,std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state,int room_size);
+	EntityManager(ResourceManager<sf::Texture,std::string>* resourceManager, std::vector<PlayerInfo>* player_infos, GameState* game_state,int room_size,ParticleEngine* particle_engine);
 	~EntityManager();
 
 	void addEntity(Entity* entity);
@@ -46,7 +46,9 @@ public:
 	void displayTemporaryMessage(std::string text);
 
 	void won();
+	ParticleEngine* getParticleEngine();
 private:
+	ParticleEngine* particle_engine_;
 	TrapInterface* trap_interface_;
 	GameState* game_state_;
 	sf::Font font_;
