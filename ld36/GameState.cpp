@@ -72,12 +72,20 @@ void GameState::connectAndWait() {
 	for (int i = 0; i < total; i++) {
 		player_infos_.push_back(PlayerInfo());
 	}
+
+	sf::Packet sp;
+	socket_.receive(sp);
+	sp >> spawn_room_;
+	std::cout << "SPAWNING AT " << spawn_room_ << std::endl;
+
 	socket_.setBlocking(false);
+
 }
 
 void GameState::start(){
-	room_size_ = 16 * TILE_SIZE;
-	int room_root = 10;
+	int room_root = 12;
+	room_size_ = room_root * TILE_SIZE;
+	
 	int max_rooms = room_root*room_root;
 	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_,this,room_size_));
 
@@ -93,19 +101,25 @@ void GameState::start(){
 	resourceManager_.load("mummy", "mummy.png");
 	resourceManager_.load("wepchest", "wepchest.png");
 
-	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(50, 50));
+	connectAndWait();
+	//player_no_ = 3;
+	player_ = new Player(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
+	generateRooms(room_root);
+	generateMap(max_rooms);
+
+	
 	entity_manager_->addEntity(player_);
 
 	//Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "mummy", 0.1f, player_, 50);
 	//entity_manager_->addEntity(mummy);
 
-	generateRooms(room_root);
+	
+
+	
+
+	rooms_[spawn_room_]->add(player_, sfld::Vector2f(50, 50));
 	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
 	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
-
-	connectAndWait();
-	//player_no_ = 3;
-	generateMap(max_rooms);
 
 	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
 	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
@@ -134,18 +148,31 @@ void GameState::generateDoor(DoorConditionsList condition, int room) {
 }
 
 void GameState::generateMap(int max_rooms) {
-	//test solution
-	ListCondition c1(1, 10);
-	ListCondition c2(2, 11);
-	ConditionList l1 = { c1 , c2};
-	ListCondition c3(0, 4);
-	ConditionList l2 = { c3 };
-	ListCondition c4(1, 5);
-	ListCondition c5(2, 3);
-	ConditionList l3 = { c4, c5 };
-	solution_.push_back(l1);
-	solution_.push_back(l2);
-	solution_.push_back(l3);
+	//Receive solution;
+	bool done = false;	
+	ConditionList list;
+
+	while (!done) {
+		sf::Packet p;
+		if (socket_.receive(p) == sf::Socket::Done) {
+			std::string cond;
+			int player_no, room_no;
+			p >> cond >> player_no >> room_no;
+			if (cond == "cond") {
+				ListCondition condition(player_no, room_no);
+				list.push_back(condition);
+			}
+			else if (cond == "next") {
+				list = ConditionList();
+			}
+			else if (cond == "end") {
+				done = true;
+			}
+			else if (cond == "add") {
+				solution_.push_back(list);
+			}
+		}
+	}
 
 	for (int i = 1; i < solution_.size(); i++) {
 		ConditionList list = solution_[i];
@@ -240,15 +267,4 @@ void GameState::receiveData() {
 		}
 	}
 }
-
-/*
-Feature list to create next:
--Display room numbers X
--Display conditions for doors opening X
--Add chests which give you the ability to place traps or gain weapons X
--First trap to add: Curse trap, Mummys spawn in rooms you are in but don't follow you to other rooms.
--Add weapon
--Then add randomly spawning enemies in rooms sometimes
--At the end of the day, make the random generation thing, with a ending. Ends after last step in certain room.
-*/
 

@@ -47,6 +47,8 @@ private:
 	Player* player_;
 
 	int room_size_;
+	int spawn_room_;
+
 
 	PlayerInfo old_data_;
 	std::vector<PlayerInfo> player_infos_;

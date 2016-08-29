@@ -13,7 +13,7 @@ Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManag
 	resource_manager_(resource_manager), room_num_(room_num), player_infos_(player_infos),cotm_it(0),cotm_timer(0),cotm_ready(false){
 	room_area_ = sf::FloatRect(world_coords, sfld::Vector2f(room_size, room_size));
 	room_text_.setFont(*entity_manager->getFont());
-	room_text_.setCharacterSize(room_size - 5*TILE_SIZE);
+	room_text_.setCharacterSize(room_size - 8*TILE_SIZE);
 	room_text_.setString(std::to_string(room_num));
 	room_text_.setOrigin(room_text_.getGlobalBounds().left + room_text_.getGlobalBounds().width / 2, room_text_.getGlobalBounds().top + room_text_.getGlobalBounds().height / 2);
 	room_text_.setPosition(room_area_.left + room_area_.width / 2, room_area_.top + room_area_.height / 2);
@@ -27,7 +27,7 @@ Room::~Room() = default;
 void Room::playerTouchedWall(Entity* door) {
 	sf::Text text;
 	text.setFont(*entity_manager_->getFont());
-	text.setCharacterSize(30);
+	text.setCharacterSize(16);
 	std::string str= "Door requires ";
 	DoorConditionsList list = getConditionsFromDoor(door);
 	for (int i = 0; i < list.size(); i++) {
@@ -56,7 +56,9 @@ DoorConditionsList Room::getConditionsFromDoor(Entity* door) {
 void Room::setLit(bool lit) {
 	lit_ = lit;
 	for (auto& it : entities_) {
-		it->setActive(lit);
+		if (it->getType() != Entity::TYPE_PLAYER) {
+			it->setActive(lit);
+		}
 	}
 }
 

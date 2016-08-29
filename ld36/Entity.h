@@ -62,7 +62,6 @@ protected:
 	void move(sfld::Vector2f direction,int frameTime,float magnitude); //moves entity, including collisions with walls
 
 	void doOffset(sfld::Vector2f offset);
-	
 
 	ResourceManager<sf::Texture, std::string>* resourceManager_;
 	EntityManager* entityManager_;
@@ -82,5 +81,16 @@ private:
 	bool walkthrough_;
 
 	sfld::Vector2f position_; //centre position
-	
 };
+
+/*
+Algorithm:
+
+-Spawn players all at different places [server]
+-Generate suitable route to completion based on rooms near each player's spawn [server]
+-Generate loads of traps (need to be clear these are naturally occuring traps in the graphics) [client]
+-Potential feature: indicator of how close to treasure a player is so they know when they can start risking killing off others.
+
+
+
+*/
