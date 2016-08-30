@@ -32,6 +32,7 @@ public:
 
 	void clear();
 	void addTrap(Trap* trap);
+	void addEye();
 	void setTrapInterface(TrapInterface* trap_interface);
 	void doRedTrap();
 	void renderText(sf::Text text);
@@ -41,12 +42,16 @@ public:
 	sf::RenderTexture* getLitTexture();
 	sf::RenderTexture* getUnlitTexture();
 
+	void renderUnaffected(sf::Text text, sf::RenderTarget* target);
+
 	Room* getRoom(int n);
 
 	void displayTemporaryMessage(std::string text);
 
 	void won();
 	ParticleEngine* getParticleEngine();
+	void changeHealth(int amount);
+	void displayPinfo();
 private:
 	ParticleEngine* particle_engine_;
 	TrapInterface* trap_interface_;
@@ -72,4 +77,6 @@ private:
 	sf::Text temp_text_;
 	int temp_timer_;
 	bool display_temp_;
+
+	sf::Text health_text_;
 };

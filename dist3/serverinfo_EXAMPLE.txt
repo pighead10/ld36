@@ -1,0 +1,5 @@
+1.2.3.4
+1337
+pighead10
+
+This is an EXAMPLE serverinfo file. The actual file is serverinfo.txt.

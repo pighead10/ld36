@@ -64,6 +64,9 @@ public:
 	void render(sf::RenderTarget* target);
 
 	void addLocust();
+	int getRoomNum() const;
+
+	void addHealthPack();
 private:
 	bool cotp_;
 	bool cotp_started_;

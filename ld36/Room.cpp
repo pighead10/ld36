@@ -11,6 +11,7 @@
 #include "ParticleEngine.h"
 #include "Locust.h"
 #include "SoundManager.h"
+#include "HealthChest.h"
 
 Room::Room(int room_num, sfld::Vector2f world_coords, int room_size, EntityManager* entity_manager,
 	Player* player, ResourceManager<sf::Texture, std::string>* resource_manager, std::vector<PlayerInfo>* player_infos,DoorOrientation orientation) :
@@ -37,7 +38,8 @@ void Room::playerTouchedWall(Entity* door) {
 	std::string str= "Door requires ";
 	DoorConditionsList list = getConditionsFromDoor(door);
 	for (int i = 0; i < list.size(); i++) {
-		str += std::to_string(list[i].players) + " player in room " + std::to_string(list[i].room);
+		std::string pl = list[i].players > 1 ? "players" : "player";
+		str += std::to_string(list[i].players) + " " + pl + " in room " + std::to_string(list[i].room);
 		if (i != list.size() - 1) {
 			str += " and ";
 		}
@@ -81,7 +83,17 @@ sf::Text Room::getRoomText() const {
 }
 
 void Room::setCotmReady() {
-	cotm_ready = true;
+	if (!cotm_ready) {
+		SoundManager::play("angryzombie");
+		cotm_ready = true;
+	}
+}
+
+void Room::addHealthPack() {
+	HealthChest* chest = new HealthChest(resource_manager_, entity_manager_, sfld::Vector2f(0, 0));
+	int x = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+	int y = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+	add(chest, sfld::Vector2f(x,y));
 }
 
 void Room::addCotp() {
@@ -93,6 +105,10 @@ void Room::addCotp() {
 	cotp_text_.setFont(*entity_manager_->getFont());
 	cotp_text_.setCharacterSize(30);
 	cotp_text_.setFillColor(sf::Color::White);
+}
+
+int Room::getRoomNum() const{
+	return room_num_;
 }
 
 void Room::update(int frame_time) {
@@ -107,7 +123,7 @@ void Room::update(int frame_time) {
 			if (cotp_ && !cotp_started_) {
 				SoundManager::play("scaryscream");
 				cotp_started_ = true;
-				cotp_timer_ = 2000;
+				cotp_timer_ = 1200;
 
 			}
 			if (cotp_started_) {
@@ -124,7 +140,7 @@ void Room::update(int frame_time) {
 					cotp_started_ = false;
 					entity_manager_->getParticleEngine()->generatePurpleExplosionEffect(centre);
 					SoundManager::play("explosionfuture");
-					player_->damaged(100);
+					player_->damaged(40);
 				}
 			}
 		}
@@ -171,7 +187,7 @@ void Room::update(int frame_time) {
 					entity_manager_->displayTemporaryMessage("Door to room " + std::to_string(room_num_) + " opened!");
 					it.first->setOpen(true);
 				}
-			} //TODO: else close?
+			} 
 		}
 
 		//Scan player infos for traps etc.
@@ -194,8 +210,11 @@ void Room::update(int frame_time) {
 					}
 					else if (it->msg_type == MESSAGE_TRAP_LOCUST) {
 						std::cout << "Locust trap activated" << std::endl;
-						addLocust();
-						
+						addLocust();					
+					}
+					else if (it->msg_type == MESSAGE_PACK_HEALTH) {
+						std::cout << "Health pack activated" << std::endl;
+						addHealthPack();
 					}
 				}
 				it = player_infos_->erase(it);
@@ -208,7 +227,7 @@ void Room::update(int frame_time) {
 }
 
 void Room::addLocust() {
-	Locust* locust = new Locust(resource_manager_, entity_manager_, sfld::Vector2f(0, 0), "locust", 0.5f, player_, 10);
+	Locust* locust = new Locust(resource_manager_, entity_manager_, sfld::Vector2f(0, 0), "locust", 0.5f, player_, 5);
 	add(locust, sfld::Vector2f(room_size_ / 2, room_size_ / 2));
 }
 
@@ -218,7 +237,7 @@ void Room::doCotm(int frame_time) {
 	if (cotm_timer > threshold) {
 		cotm_it++;
 		cotm_timer = 0;
-		Entity* mummy = new Mummy(resource_manager_, entity_manager_, sfld::Vector2f(0,0), "mummy", 0.1f, player_, 50);
+		Entity* mummy = new Mummy(resource_manager_, entity_manager_, sfld::Vector2f(0,0), "mummy", 0.1f, player_, 20);
 		add(mummy, sfld::Vector2f(room_size_ / 2, room_size_ / 2));
 	}
 }

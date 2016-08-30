@@ -12,6 +12,7 @@
 #include "SwordChest.h"
 #include "WinBlock.h"
 #include "ParticleEngine.h"
+#include "EyeChest.h"
 #include <fstream>
 
 sf::Packet& operator << (sf::Packet& packet, const PlayerInfo& m)
@@ -42,7 +43,7 @@ void GameState::sfmlEvent(sf::Event evt){
 
 void GameState::sendTrap(MessageType type, int room_no) {
 	PlayerInfo info;
-	info.name = "test"; //todo change to actual name
+	info.name = player_name_; //todo change to actual name
 	info.msg_type = type;
 	info.room_no = room_no;
 	info.player_no = player_no_;
@@ -57,6 +58,7 @@ void GameState::connectAndWait() {
 	std::ifstream fin("serverinfo.txt");
 	fin >> ip;
 	fin >> port;
+	fin >> player_name_;
 
 	//Connect to server and wait for start signal.
 	socket_.connect(ip, stoi(port));
@@ -90,6 +92,9 @@ void GameState::start(){
 	int max_rooms = room_size_*room_size_;
 	entity_manager_ = std::unique_ptr<EntityManager>(new EntityManager(&resourceManager_, &player_infos_, this, room_size_, particle_engine_.get()));
 
+	pinfo_text_.setFont(*entity_manager_->getFont());
+	pinfo_ = false;
+
 	trap_interface_ = std::unique_ptr<TrapInterface>(new TrapInterface(entity_manager_.get(),max_rooms));
 	entity_manager_->setTrapInterface(trap_interface_.get());
 
@@ -104,6 +109,14 @@ void GameState::start(){
 	resourceManager_.load("treasure", "treasure.png");
 	resourceManager_.load("cotp", "cotp.png");
 	resourceManager_.load("locust", "locust.png");
+	resourceManager_.load("player_wep", "player_wep.png");
+	resourceManager_.load("curseplayer_wep", "curseplayer_wep.png");
+	resourceManager_.load("curseplayer_wep_attack", "curseplayer_wep_attack.png");
+	resourceManager_.load("player_wep_attack", "player_wep_attack.png");
+	resourceManager_.load("curseplayer", "curseplayer.png");
+	resourceManager_.load("healthup", "healthup.png");
+	resourceManager_.load("healthchest", "healthchest.png");
+	resourceManager_.load("eye", "eye.png");
 
 	SoundManager::add("angryzombie", "media/sound/AngryZombie.ogg");
 	SoundManager::add("coinrattle", "media/sound/CoinRattle.ogg");
@@ -134,25 +147,7 @@ void GameState::start(){
 	generateRooms(row_size_);
 	generateMap(max_rooms);
 
-	
-	entity_manager_->addEntity(player_);
-
-	Entity* mummy = new Mummy(&resourceManager_, entity_manager_.get(), sfld::Vector2f(100, 100), "mummy", 0.1f, player_, 50);
-	entity_manager_->addEntity(mummy);
 	rooms_[spawn_room_]->add(player_, sfld::Vector2f(100, 100));
-	rooms_[0]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
-	rooms_[2]->add(new StaticObj(&resourceManager_, "wall", entity_manager_.get(), sfld::Vector2f(0, 0), Entity::SHAPE_SQUARE, Entity::TYPE_WALL), sfld::Vector2f(50, 50));
-
-	TrapChest* chest = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_RED, "Blinding Light");
-	TrapChest* chest2 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_COTM, "Curse of the Mummy");
-	TrapChest* chest3 = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_LOCUST, "Locust Swarm");
-
-	SwordChest* schest = new SwordChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
-
-	rooms_[0]->add(chest, sfld::Vector2f(200, 200));
-	rooms_[0]->add(chest2, sfld::Vector2f(300, 300));
-	rooms_[0]->add(chest3, sfld::Vector2f(300, 200));
-	rooms_[0]->add(schest, sfld::Vector2f(200, 400));
 }
 
 void GameState::pause(){	
@@ -162,6 +157,12 @@ void GameState::resume(){
 }
 
 void GameState::exit(){
+}
+
+void GameState::displayPinfo() {
+	pinfo_timer_ = 0;
+	pinfo_ = true;
+	pinfo_text_.setPosition(100, 600);
 }
 
 void GameState::won() {
@@ -259,7 +260,6 @@ void GameState::generateMap(int max_rooms) {
 		final_x = roomNumToCoord(win_room).x + compx;
 		final_y = roomNumToCoord(win_room).y + compy;
 		final_room = coordToRoomNum(sf::Vector2i(final_x, final_y));
-		std::cout << "attempted room door: x " << final_x << " y " << final_y << std::endl;
 		step+=0.5f;
 	} while (final_x < 0 || final_x >= row_size_ || final_y < 0 || final_y >= row_size_ ||
 		rooms_[final_room]->containsDoors());
@@ -269,9 +269,9 @@ void GameState::generateMap(int max_rooms) {
 	rooms_[win_room]->add(win, sfld::Vector2f(100, 100));
 
 	for (auto& room : rooms_) {
-		if (!room->containsDoors()) {
-			int r = rand() % 2; //50% chance of trap being spawned
-			if (r) {
+		if (!room->containsDoors() && room->getRoomNum() != spawn_room_) {
+			int r = rand() % 10;
+			if (r < 3) {
 				int trapn = rand() % 2;
 				if (trapn == 0){
 					room->addCotp();
@@ -281,8 +281,9 @@ void GameState::generateMap(int max_rooms) {
 				}
 			}
 		}
+		
 		int r = rand() % 5;
-		if (!r) { //20% chance of trap chest spawning
+		if (r == 0) { //20% chance of trap chest spawning
 			int trapn = rand() % 4;
 			TrapChest* trap;
 			if (trapn == 0) {
@@ -297,7 +298,32 @@ void GameState::generateMap(int max_rooms) {
 			else if (trapn == 3) {
 				trap = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "trapchest", MESSAGE_TRAP_LOCUST, "Locust Swarm");
 			}
+			int x = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			int y = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			room->add(trap, sfld::Vector2f(x, y));
+		}
+		r = rand() % 10;
+		if (r < 3) { //30% chance of trap chest spawning
+			int x = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			int y = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			TrapChest* healthup = new TrapChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0), "healthup", MESSAGE_PACK_HEALTH, "Health Pack");
+			room->add(healthup, sfld::Vector2f(x, y));
+		}
 
+		r = rand() % 4;
+		if (r == 0) {
+			SwordChest* chest = new SwordChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
+			int x = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			int y = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			room->add(chest, sfld::Vector2f(x, y));
+		}
+
+		r = rand() % 10;
+		if (r == 0) {
+			EyeChest* chest = new EyeChest(&resourceManager_, entity_manager_.get(), sfld::Vector2f(0, 0));
+			int x = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			int y = rand() % (room_size_ - 2 * TILE_SIZE) + 2 * TILE_SIZE;
+			room->add(chest, sfld::Vector2f(x, y));
 		}
 	}
 }
@@ -326,6 +352,23 @@ void GameState::update(int frameTime){
 		for (auto& it : player_infos_) {
 			//std::cout << "Num: " << it.player_no << " Name: " << it.name << " Room number: " << it.room_no << std::endl;
 		}
+		//pinfo
+		if (pinfo_) {
+			pinfo_timer_ += frameTime;
+			if (pinfo_timer_ >= 5000) {
+				pinfo_ = false;
+			}
+			else {
+				std::string str = "Players are in rooms: ";
+				for (auto& it : player_infos_) {
+					if (it.msg_type == MESSAGE_INFO) {
+						str += it.name + ": " + std::to_string(it.room_no) + " - ";
+					}
+				}
+				//std::cout << str << std::endl;
+				pinfo_text_.setString(str);
+			}
+		}
 	}
 }
 
@@ -345,6 +388,10 @@ void GameState::render(sf::RenderTarget* target){
 	
 	particle_engine_->renderParticles(target);
 	entity_manager_->renderTrapInterface(trap_interface_.get(),target);
+
+	if (pinfo_) {
+		entity_manager_->renderUnaffected(pinfo_text_,target);
+	}
 }
 
 void GameState::generateRooms(int room_root) {
@@ -386,7 +433,7 @@ void GameState::generateRooms(int room_root) {
 void GameState::sendData() {
 	PlayerInfo info;
 	info.msg_type = MESSAGE_INFO;
-	info.name = "test";
+	info.name = player_name_;
 	info.room_no = player_->getRoomNum();
 	info.player_no = player_no_;
 	if (old_data_.room_no != info.room_no) {
@@ -405,7 +452,6 @@ void GameState::receiveData() {
 		rec >> info;
 		if (info.msg_type == MESSAGE_INFO) {
 			if (info.player_no >= 0 && info.player_no < player_infos_.size()) {
-				std::cout << "Client received info: Player number: " << info.player_no << " Name: " << info.name << " Room: " << info.room_no << std::endl;
 				player_infos_[info.player_no].name = info.name;
 				player_infos_[info.player_no].room_no = info.room_no;
 			}
@@ -420,10 +466,10 @@ void GameState::receiveData() {
 			}
 			else {
 				SoundManager::play("lost");
-				entity_manager_->displayTemporaryMessage("You lost! Player " + std::to_string(info.player_no) + " reached the treasure!");
+				entity_manager_->displayTemporaryMessage("You lost! " + info.name + " reached the treasure!");
 			}
 		}
-		else {
+		else if(info.player_no != player_no_){
 			player_infos_.push_back(info);
 		}
 	}

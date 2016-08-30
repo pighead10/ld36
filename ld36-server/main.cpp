@@ -75,16 +75,16 @@ int main() {
 		if (listener.accept(*client) == sf::Socket::Done) {
 			std::cout << "New connection received from " << client->getRemoteAddress() << std::endl;
 			clients.push_back(client);
-			//players.push_back(PlayerInfo());
+			players.push_back(PlayerInfo());
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
 			started = true;
 		}
 	}
 
-	for (int i = 0; i < 3; i++) {
+	/*for (int i = 0; i < 3; i++) {
 		players.push_back(PlayerInfo());
-	}
+	}*/
 
 	int total_players = players.size();
 
@@ -136,7 +136,7 @@ int main() {
 		//locs.erase(locs.begin() + n);
 	}
 
-	int completion_steps = rand() % 15 + 5;
+	int completion_steps = rand() % 8 + 4;
 
 	std::vector<std::vector<bool>> visited = std::vector<std::vector<bool>>(total_players, std::vector<bool>(ROW_SIZE*ROW_SIZE, false));
 	SolutionList solution_list;
@@ -234,7 +234,8 @@ int main() {
 					players[i] = info;
 					std::cout << "Received info: Player number: " << players[i].player_no << " Name: " << players[i].name << " Room: " << players[i].room_no << std::endl;
 				}
-				else if (info.msg_type == MESSAGE_TRAP_RED || info.msg_type == MESSAGE_TRAP_COTM || info.msg_type == MESSAGE_TRAP_COTP || info.msg_type == MESSAGE_TRAP_LOCUST) {
+				else if (info.msg_type == MESSAGE_TRAP_RED || info.msg_type == MESSAGE_TRAP_COTM || info.msg_type == MESSAGE_TRAP_COTP || info.msg_type == MESSAGE_TRAP_LOCUST
+					|| info.msg_type == MESSAGE_PACK_HEALTH) {
 					std::cout << "Received red trap request in room " << info.room_no << ". Sending trap to clients." << std::endl;
 					sendToClients(&clients, rec);
 				}

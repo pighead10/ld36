@@ -55,7 +55,8 @@ public:
 	bool isActive() const;
 	void setActive(bool active);
 
-	void setWeapon(Weapon* weapon);
+	virtual void setWeapon(Weapon* weapon);
+	virtual void gainHealth(int amount);
 protected:
 	Weapon* weapon_;
 

@@ -10,6 +10,7 @@ enum MessageType {
 	MESSAGE_WIN,
 	MESSAGE_TRAP_COTP,
 	MESSAGE_TRAP_LOCUST,
+	MESSAGE_PACK_HEALTH
 };
 
 struct PlayerInfo {

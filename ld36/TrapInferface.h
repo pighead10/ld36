@@ -17,6 +17,7 @@ public:
 	~TrapInterface();
 
 	void addTrap(Trap* trap);
+	void addSight();
 
 	void keyPressed(sf::Keyboard::Key key);
 	void render(sf::RenderTarget* target);

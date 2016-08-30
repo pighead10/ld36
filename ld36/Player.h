@@ -12,7 +12,16 @@ public:
 	bool getCotm() const;
 	void damaged(int amount);
 	void setSpeed(float speed);
+	void gainHealth(int amount);
+
+	void render(sf::RenderTarget* target);
+	void setWeapon(Weapon* weapon);
+
 private:
+	sf::Sprite animation_spr_;
+	int animation_timer_;
+	bool animation_;
+
 	float base_speed_;
 	int timer_;
 	int slow_timer_;

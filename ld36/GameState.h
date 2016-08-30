@@ -37,6 +37,7 @@ public:
 	Room* getRoom(int n);
 
 	void won();
+	void displayPinfo();
 private:
 	bool game_ended_;
 
@@ -51,10 +52,11 @@ private:
 	int player_no_;
 	Player* player_;
 
+	std::string player_name_;
+
 	int room_size_;
 	int spawn_room_;
 	int row_size_;
-
 
 	PlayerInfo old_data_;
 	std::vector<PlayerInfo> player_infos_;
@@ -71,4 +73,8 @@ private:
 
 	sf::Vector2i roomNumToCoord(int n) const;
 	int coordToRoomNum(sf::Vector2i coord) const;
+
+	sf::Text pinfo_text_;
+	bool pinfo_;
+	int pinfo_timer_;
 };

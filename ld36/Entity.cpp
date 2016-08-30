@@ -146,6 +146,10 @@ void Entity::move(sfld::Vector2f direction, int frameTime, float magnitude){
 	doOffset(direction*(float)frameTime*magnitude);
 }
 
+void Entity::gainHealth(int amount) {
+
+}
+
 bool Entity::isActive() const {
 	return active_;
 }

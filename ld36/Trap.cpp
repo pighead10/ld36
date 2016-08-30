@@ -2,6 +2,7 @@
 #include "Trap.h"
 #include "EntityManager.h"
 
+Trap::Trap() = default;
 Trap::Trap(std::string name, MessageType message_type, EntityManager* entity_manager) : name_(name), entity_manager_(entity_manager), message_type_(message_type) {}
 
 Trap::~Trap() = default;

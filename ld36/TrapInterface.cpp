@@ -2,6 +2,7 @@
 #include "TrapInferface.h"
 #include "EntityManager.h"
 #include "Trap.h"
+#include "Eye.h"
 
 TrapInterface::TrapInterface() = default;
 
@@ -15,7 +16,7 @@ void TrapInterface::createGui() {
 	sf::Text text;
 	text.setFont(*font_);
 	text.setCharacterSize(30);
-	text.setString("Traps available: (press T to select)");
+	text.setString("Items available: (press T to select)");
 	text.setPosition(20, 20);
 	texts_.push_back(text);
 	selection_text_.setFont(*font_);
@@ -52,6 +53,18 @@ void TrapInterface::resetState() {
 	resetListNames();
 }
 
+void TrapInterface::addSight() {
+	sf::Text text;
+	text.setFont(*font_);
+	text.setCharacterSize(20);
+	text.setFillColor(sf::Color::White);
+	text.setString("Ra's Eye");
+	trap_texts_.push_back(text);
+
+	traps_.push_back(std::unique_ptr<Trap>(new Eye(entity_manager_)));
+	positionListItems();
+}
+
 void TrapInterface::selectItem(int item) {
 	selected_ = item;
 	resetListNames();
@@ -66,11 +79,16 @@ void TrapInterface::resetListNames() {
 
 void TrapInterface::confirmSelection() {
 	typed_num_ = "";
-	state_ = TRAP_INTERFACE_PLACING;
-	selection_text_.setString("Trap selected. Enter room: ");
-	selection_text_.setCharacterSize(20);
-	sf::FloatRect bounds = trap_texts_[selected_].getGlobalBounds();
-	selection_text_.setPosition(bounds.left + bounds.width, bounds.top);
+	if (traps_[selected_]->getName() != "Ra's Eye") {
+		state_ = TRAP_INTERFACE_PLACING;
+		selection_text_.setString("Item selected. Enter room: ");
+		selection_text_.setCharacterSize(20);
+		sf::FloatRect bounds = trap_texts_[selected_].getGlobalBounds();
+		selection_text_.setPosition(bounds.left + bounds.width, bounds.top);
+	}
+	else {
+		placeTrap(0);
+	}
 }
 
 void TrapInterface::startSelecting() {
@@ -106,7 +124,7 @@ void TrapInterface::keyPressed(sf::Keyboard::Key key) {
 		if (key >= 26 && key <= 35) {
 			char code = key + 22;
 			typed_num_ += code;
-			selection_text_.setString("Trap selected. Enter room: " + typed_num_);
+			selection_text_.setString("Item selected. Enter room: " + typed_num_);
 		}
 		else if (key == sf::Keyboard::BackSpace) {
 			if (typed_num_.size() > 0) {
@@ -115,9 +133,11 @@ void TrapInterface::keyPressed(sf::Keyboard::Key key) {
 			}
 		}
 		else if (key == sf::Keyboard::Return) {
-			int room_no = stoi(typed_num_);
-			if (room_no >= 0 && room_no <= max_rooms_) {
-				placeTrap(stoi(typed_num_));
+			if (typed_num_.size() > 0) {
+				int room_no = stoi(typed_num_);
+				if (room_no >= 0 && room_no <= max_rooms_) {
+					placeTrap(stoi(typed_num_));
+				}
 			}
 		}
 	}

@@ -20,6 +20,9 @@ EntityManager::EntityManager(ResourceManager<sf::Texture, std::string>* resource
 	lit_tex_.clear(sf::Color(102, 59, 23));
 	unlit_tex_.clear(sf::Color(46, 27, 11));
 
+	health_text_.setFont(font_);
+	health_text_.setPosition(800, 10);
+
 	temp_text_.setFont(font_);
 	temp_text_.setCharacterSize(22);
 }
@@ -66,6 +69,14 @@ void EntityManager::addTrap(Trap* trap) {
 	trap_interface_->addTrap(trap);
 }
 
+void EntityManager::addEye() {
+	trap_interface_->addSight();
+}
+
+void EntityManager::displayPinfo() {
+	game_state_->displayPinfo();
+}
+
 void EntityManager::setTrapInterface(TrapInterface* trap_interface) {
 	trap_interface_ = trap_interface;
 }
@@ -99,7 +110,7 @@ void EntityManager::update(int frameTime){
 	texts_.clear();
 	if (red_trap_) {
 		red_timer_ += frameTime;
-		if (red_timer_ >= 2000) {
+		if (red_timer_ >= 5000) {
 			red_trap_ = false;
 		}
 	}
@@ -134,9 +145,19 @@ void EntityManager::update(int frameTime){
 	push_queue_.clear();
 }
 
+void EntityManager::changeHealth(int amount) {
+	health_text_.setString("Health: " + std::to_string(amount));
+}
+
 void EntityManager::renderTrapInterface(TrapInterface* trap_interface,sf::RenderTarget* target) {
 	SFLD::window_->setView(SFLD::window_->getDefaultView());
 	trap_interface->render(target);
+	SFLD::window_->setView(view_);
+}
+
+void EntityManager::renderUnaffected(sf::Text text, sf::RenderTarget* target) {
+	SFLD::window_->setView(SFLD::window_->getDefaultView());
+	target->draw(text);
 	SFLD::window_->setView(view_);
 }
 
@@ -161,4 +182,7 @@ void EntityManager::render(sf::RenderTarget* target){
 		target->draw(temp_text_);
 		SFLD::window_->setView(view_);
 	}
+	SFLD::window_->setView(SFLD::window_->getDefaultView());
+	target->draw(health_text_);
+	SFLD::window_->setView(view_);
 }

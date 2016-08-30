@@ -44,7 +44,7 @@ void Particle::update(double frameTime){
 
 void Particle::init_object(const std::string& nam,const sf::Vector2f& pos,const sf::Color& colour,
 	float radius){
-	shape = std::shared_ptr<sf::Shape>(new sf::RectangleShape(sf::Vector2f(radius,radius)));
+	shape = std::shared_ptr<sf::Shape>(new sf::CircleShape(radius));
 	shape->setFillColor(colour);
 	shape->setOrigin(radius/2,radius/2);
 	setPosition(pos);
